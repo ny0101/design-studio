@@ -2,6 +2,7 @@ import { About } from "./components/About";
 import { DesignCanvas } from "./components/Canvas/DesignCanvas";
 import { ShapePicker } from "./components/Sidebar/ShapePicker";
 import { IconPicker } from "./components/Sidebar/IconPicker";
+import { TemplatePicker } from "./components/Sidebar/TemplatePicker";
 import { Footer } from "./components/Footer";
 import { PropertiesPanel } from "./components/Properties/PropertiesPanel";
 import { Sidebar } from "./components/Sidebar/Sidebar";
@@ -24,6 +25,7 @@ export default function App() {
           {view === "about" ? <About /> : <DesignCanvas />}
           {view === "studio" && activeTool === "shape" && <ShapePicker />}
           {view === "studio" && activeTool === "elements" && <IconPicker />}
+          {view === "studio" && activeTool === "template" && <TemplatePicker />}
         </main>
         {view === "studio" && <LayersPanel />}
         {view === "studio" && <PropertiesPanel />}

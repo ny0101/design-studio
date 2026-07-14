@@ -129,6 +129,7 @@ interface StudioActions {
   duplicate: (id?: string) => void;
   group: () => void;
   ungroup: () => void;
+  applyTemplate: (elements: CanvasElement[]) => void;
   undo: () => void;
   redo: () => void;
 }
@@ -298,6 +299,15 @@ export const useStudioStore = create<StudioState & StudioActions>((set) => ({
         ),
       };
     }),
+  applyTemplate: (elements) =>
+    set((state) => ({
+      ...saveHistory(state),
+      elements: elements.map((element) => ({
+        ...element,
+        id: crypto.randomUUID(),
+      })),
+      selectedIds: [],
+    })),
   undo: () =>
     set((state) => {
       const previous = state.past.at(-1);

@@ -72,6 +72,7 @@ export interface RectElement extends BaseElement {
   height: number;
   fill: string;
   radius: number;
+  shadow?: ElementShadow;
 }
 
 export interface CircleElement extends BaseElement {

@@ -260,6 +260,11 @@ function ElementNode({
         height={element.height}
         fill={element.fill}
         cornerRadius={element.radius}
+        shadowEnabled={element.shadow?.enabled ?? false}
+        shadowColor={element.shadow?.color}
+        shadowBlur={element.shadow?.blur}
+        shadowOffsetX={element.shadow?.offsetX}
+        shadowOffsetY={element.shadow?.offsetY}
       />
     );
   if (element.kind === "circle")
