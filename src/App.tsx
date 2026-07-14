@@ -7,10 +7,12 @@ import { Toolbar } from "./components/Toolbar/Toolbar";
 import { LayersPanel } from "./components/Layers/LayersPanel";
 import { useStudioStore } from "./store/studio-store";
 import { useTranslation } from "./hooks/useTranslation";
+import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 
 export default function App() {
   const { theme, view } = useStudioStore();
   const { t } = useTranslation();
+  useKeyboardShortcuts();
   return (
     <div className="app-shell" data-theme={theme}>
       <Toolbar />

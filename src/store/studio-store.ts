@@ -89,13 +89,25 @@ interface StudioActions {
   toggleGrid: () => void;
   toggleGuides: () => void;
   select: (id: string | null) => void;
-  add: (element: CanvasElement) => void;
+  add: (element: CanvasElement, options?: { select?: boolean }) => void;
   update: (id: string, patch: Partial<CanvasElement>) => void;
   remove: (id: string) => void;
   reorder: (id: string, direction: "up" | "down") => void;
+  copy: () => void;
+  paste: () => void;
+  duplicate: (id?: string) => void;
   undo: () => void;
   redo: () => void;
 }
+
+const PASTE_OFFSET = 24;
+
+const withNewId = (element: CanvasElement, offset = PASTE_OFFSET): CanvasElement => ({
+  ...element,
+  id: crypto.randomUUID(),
+  x: element.x + offset,
+  y: element.y + offset,
+});
 
 export const useStudioStore = create<StudioState & StudioActions>((set) => ({
   view: "studio",
@@ -107,6 +119,7 @@ export const useStudioStore = create<StudioState & StudioActions>((set) => ({
   showGuides: true,
   elements: initialElements,
   selectedId: "heading",
+  clipboard: [],
   past: [],
   future: [],
   setView: (view) => set({ view }),
@@ -120,11 +133,11 @@ export const useStudioStore = create<StudioState & StudioActions>((set) => ({
   toggleGrid: () => set((state) => ({ showGrid: !state.showGrid })),
   toggleGuides: () => set((state) => ({ showGuides: !state.showGuides })),
   select: (selectedId) => set({ selectedId }),
-  add: (element) =>
+  add: (element, options) =>
     set((state) => ({
       ...saveHistory(state),
       elements: [...state.elements, element],
-      selectedId: element.id,
+      selectedId: options?.select === false ? state.selectedId : element.id,
     })),
   update: (id, patch) =>
     set((state) => ({
@@ -147,6 +160,33 @@ export const useStudioStore = create<StudioState & StudioActions>((set) => ({
       const elements = [...state.elements];
       [elements[index], elements[swap]] = [elements[swap], elements[index]];
       return { ...saveHistory(state), elements };
+    }),
+  copy: () =>
+    set((state) => {
+      const selected = state.elements.find((item) => item.id === state.selectedId);
+      return selected ? { clipboard: [{ ...selected }] } : state;
+    }),
+  paste: () =>
+    set((state) => {
+      if (!state.clipboard.length) return state;
+      const pasted = state.clipboard.map((item) => withNewId(item));
+      return {
+        ...saveHistory(state),
+        elements: [...state.elements, ...pasted],
+        selectedId: pasted[pasted.length - 1].id,
+      };
+    }),
+  duplicate: (id) =>
+    set((state) => {
+      const targetId = id ?? state.selectedId;
+      const source = state.elements.find((item) => item.id === targetId);
+      if (!source) return state;
+      const copy = withNewId(source);
+      return {
+        ...saveHistory(state),
+        elements: [...state.elements, copy],
+        selectedId: copy.id,
+      };
     }),
   undo: () =>
     set((state) => {

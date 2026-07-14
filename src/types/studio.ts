@@ -69,6 +69,7 @@ export interface StudioState {
   showGuides: boolean;
   elements: CanvasElement[];
   selectedId: string | null;
+  clipboard: CanvasElement[];
   past: CanvasElement[][];
   future: CanvasElement[][];
 }

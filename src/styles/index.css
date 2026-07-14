@@ -294,6 +294,8 @@ button:disabled {
   color: #adb2bf;
   background: transparent;
   text-align: left;
+  cursor: pointer;
+  user-select: none;
 }
 .layer-row:hover,
 .layer-row.active {

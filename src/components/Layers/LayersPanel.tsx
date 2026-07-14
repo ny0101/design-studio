@@ -21,10 +21,13 @@ export function LayersPanel() {
       </div>
       <div className="layer-list">
         {[...elements].reverse().map((element) => (
-          <button
+          <div
             key={element.id}
+            role="button"
+            tabIndex={0}
             className={selectedId === element.id ? "layer-row active" : "layer-row"}
             onClick={() => select(element.id)}
+            onKeyDown={(event) => event.key === "Enter" && select(element.id)}
           >
             <span className="layer-name">
               <i className={`layer-kind ${element.kind}`} />
@@ -63,7 +66,7 @@ export function LayersPanel() {
                 <Trash2 size={13} />
               </button>
             </span>
-          </button>
+          </div>
         ))}
       </div>
     </aside>

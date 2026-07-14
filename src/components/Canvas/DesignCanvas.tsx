@@ -1,19 +1,30 @@
 import { useEffect, useRef, useState } from "react";
-import { Circle, Image as KonvaImage, Layer, Line, Rect, Stage, Text } from "react-konva";
+import {
+  Circle,
+  Image as KonvaImage,
+  Layer,
+  Line,
+  Rect,
+  Stage,
+  Text,
+  Transformer,
+} from "react-konva";
 import type { KonvaEventObject } from "konva/lib/Node";
+import type Konva from "konva";
 import type { CanvasElement, ImageElement } from "../../types/studio";
 import { useStudioStore } from "../../store/studio-store";
 import { useTranslation } from "../../hooks/useTranslation";
 
 const CANVAS_SIZE = 1080;
+const MIN_SIZE = 5;
 const id = () => crypto.randomUUID();
 
 function RasterImage({
   element,
-  onSelect,
+  shared,
 }: {
   element: ImageElement;
-  onSelect: () => void;
+  shared: Record<string, unknown>;
 }) {
   const [image, setImage] = useState<HTMLImageElement>();
   useEffect(() => {
@@ -21,16 +32,56 @@ function RasterImage({
     next.onload = () => setImage(next);
     next.src = element.src;
   }, [element.src]);
-  return <KonvaImage image={image} {...element} onClick={onSelect} onTap={onSelect} />;
+  return (
+    <KonvaImage
+      {...shared}
+      image={image}
+      width={element.width}
+      height={element.height}
+      cornerRadius={element.radius}
+    />
+  );
 }
 
 function ElementNode({ element }: { element: CanvasElement }) {
-  const { selectedId, select, update } = useStudioStore();
+  const { select, update, add } = useStudioStore();
   if (element.hidden) return null;
   const selectNode = () => select(element.id);
+  const dragStart = (event: KonvaEventObject<DragEvent>) => {
+    if (event.evt.altKey) {
+      add({ ...element, id: id() }, { select: false });
+    }
+  };
   const dragEnd = (event: KonvaEventObject<DragEvent>) =>
     update(element.id, { x: event.target.x(), y: event.target.y() });
+  const transformEnd = (event: KonvaEventObject<Event>) => {
+    const node = event.target;
+    const scaleX = node.scaleX();
+    const scaleY = node.scaleY();
+    node.scaleX(1);
+    node.scaleY(1);
+    const base = { x: node.x(), y: node.y(), rotation: node.rotation() };
+    if (element.kind === "circle") {
+      update(element.id, {
+        ...base,
+        radius: Math.max(MIN_SIZE, element.radius * ((scaleX + scaleY) / 2)),
+      });
+    } else if (element.kind === "text") {
+      update(element.id, {
+        ...base,
+        width: Math.max(MIN_SIZE * 4, element.width * scaleX),
+        fontSize: Math.max(6, Math.round(element.fontSize * scaleY)),
+      });
+    } else {
+      update(element.id, {
+        ...base,
+        width: Math.max(MIN_SIZE, element.width * scaleX),
+        height: Math.max(MIN_SIZE, element.height * scaleY),
+      });
+    }
+  };
   const shared = {
+    id: element.id,
     x: element.x,
     y: element.y,
     rotation: element.rotation,
@@ -38,9 +89,9 @@ function ElementNode({ element }: { element: CanvasElement }) {
     draggable: !element.locked,
     onClick: selectNode,
     onTap: selectNode,
+    onDragStart: dragStart,
     onDragEnd: dragEnd,
-    stroke: selectedId === element.id ? "#6C7CFF" : undefined,
-    strokeWidth: selectedId === element.id ? 4 : 0,
+    onTransformEnd: transformEnd,
   };
   if (element.kind === "text")
     return (
@@ -66,7 +117,48 @@ function ElementNode({ element }: { element: CanvasElement }) {
     );
   if (element.kind === "circle")
     return <Circle {...shared} radius={element.radius} fill={element.fill} />;
-  return <RasterImage element={element} onSelect={selectNode} />;
+  return <RasterImage element={element} shared={shared} />;
+}
+
+function SelectionTransformer() {
+  const transformer = useRef<Konva.Transformer>(null);
+  const { elements, selectedId } = useStudioStore();
+  const selected = elements.find((item) => item.id === selectedId);
+  useEffect(() => {
+    const node = transformer.current;
+    if (!node) return;
+    const stage = node.getStage();
+    const target =
+      selected && !selected.locked && !selected.hidden
+        ? stage?.findOne(`#${selected.id}`)
+        : undefined;
+    node.nodes(target ? [target] : []);
+    node.getLayer()?.batchDraw();
+  }, [selected, elements]);
+  const anchors =
+    selected?.kind === "text"
+      ? ["top-left", "top-right", "bottom-left", "bottom-right", "middle-left", "middle-right"]
+      : selected?.kind === "circle"
+        ? ["top-left", "top-right", "bottom-left", "bottom-right"]
+        : undefined;
+  return (
+    <Transformer
+      ref={transformer}
+      enabledAnchors={anchors}
+      rotateEnabled
+      anchorSize={9}
+      anchorCornerRadius={4}
+      anchorStroke="#6C7CFF"
+      borderStroke="#6C7CFF"
+      anchorFill="#FFFFFF"
+      ignoreStroke
+      boundBoxFunc={(oldBox, newBox) =>
+        Math.abs(newBox.width) < MIN_SIZE || Math.abs(newBox.height) < MIN_SIZE
+          ? oldBox
+          : newBox
+      }
+    />
+  );
 }
 
 export function DesignCanvas() {
@@ -197,6 +289,7 @@ export function DesignCanvas() {
                   />
                 </>
               )}
+              <SelectionTransformer />
             </Layer>
           </Stage>
         </div>
