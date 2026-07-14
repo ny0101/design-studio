@@ -206,12 +206,60 @@ button:disabled {
   line-height: 1.4;
 }
 .main-content {
+  position: relative;
   min-width: 0;
   overflow: hidden;
   padding: 22px;
   background-color: #1d1e23;
   background-image: radial-gradient(#353740 1px, transparent 1px);
   background-size: 14px 14px;
+}
+.shape-panel {
+  position: absolute;
+  z-index: 5;
+  top: 22px;
+  left: 22px;
+  width: 216px;
+  padding: 12px;
+  border: 1px solid #373a43;
+  border-radius: 10px;
+  background: #26282f;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35);
+}
+.shape-panel-title {
+  margin: 0 0 10px 4px;
+  color: #dfe3eb;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.shape-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.shape-grid button {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  padding: 9px 2px 7px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #b4b8c4;
+  background: transparent;
+  font-size: 9px;
+}
+.shape-grid button:hover {
+  border-color: #464a56;
+  color: #fff;
+  background: #30323a;
+}
+.shape-grid button span {
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 .native-canvas {
   height: 100%;

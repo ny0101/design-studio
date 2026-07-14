@@ -1,12 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  Arrow,
   Circle,
+  Ellipse,
   Group,
   Image as KonvaImage,
   Layer,
   Line,
   Rect,
+  RegularPolygon,
   Stage,
+  Star,
   Text,
   Transformer,
 } from "react-konva";
@@ -15,6 +19,7 @@ import type Konva from "konva";
 import type { CanvasElement, CanvasPan, ImageElement } from "../../types/studio";
 import { useStudioStore } from "../../store/studio-store";
 import { useTranslation } from "../../hooks/useTranslation";
+import { createShapeElement } from "../../utils/shapes";
 
 export const CANVAS_SIZE = 1080;
 const MIN_SIZE = 5;
@@ -70,6 +75,31 @@ function ElementNode({ element }: { element: CanvasElement }) {
         ...base,
         radius: Math.max(MIN_SIZE, element.radius * ((scaleX + scaleY) / 2)),
       });
+    } else if (element.kind === "ellipse") {
+      update(element.id, {
+        ...base,
+        radiusX: Math.max(MIN_SIZE, element.radiusX * scaleX),
+        radiusY: Math.max(MIN_SIZE, element.radiusY * scaleY),
+      });
+    } else if (element.kind === "polygon") {
+      update(element.id, {
+        ...base,
+        radius: Math.max(MIN_SIZE, element.radius * ((scaleX + scaleY) / 2)),
+      });
+    } else if (element.kind === "star") {
+      const factor = (scaleX + scaleY) / 2;
+      update(element.id, {
+        ...base,
+        innerRadius: Math.max(MIN_SIZE / 2, element.innerRadius * factor),
+        outerRadius: Math.max(MIN_SIZE, element.outerRadius * factor),
+      });
+    } else if (element.kind === "arrow" || element.kind === "line") {
+      update(element.id, {
+        ...base,
+        points: element.points.map((value, index) =>
+          index % 2 === 0 ? value * scaleX : value * scaleY,
+        ),
+      });
     } else if (element.kind === "text") {
       update(element.id, {
         ...base,
@@ -123,6 +153,59 @@ function ElementNode({ element }: { element: CanvasElement }) {
     );
   if (element.kind === "circle")
     return <Circle {...shared} radius={element.radius} fill={element.fill} />;
+  if (element.kind === "ellipse")
+    return (
+      <Ellipse
+        {...shared}
+        radiusX={element.radiusX}
+        radiusY={element.radiusY}
+        fill={element.fill}
+      />
+    );
+  if (element.kind === "polygon")
+    return (
+      <RegularPolygon
+        {...shared}
+        sides={element.sides}
+        radius={element.radius}
+        fill={element.fill}
+      />
+    );
+  if (element.kind === "star")
+    return (
+      <Star
+        {...shared}
+        numPoints={element.points}
+        innerRadius={element.innerRadius}
+        outerRadius={element.outerRadius}
+        fill={element.fill}
+      />
+    );
+  if (element.kind === "arrow")
+    return (
+      <Arrow
+        {...shared}
+        points={element.points}
+        stroke={element.stroke}
+        fill={element.stroke}
+        strokeWidth={element.strokeWidth}
+        pointerLength={element.pointerLength}
+        pointerWidth={element.pointerWidth}
+        hitStrokeWidth={24}
+        lineCap="round"
+      />
+    );
+  if (element.kind === "line")
+    return (
+      <Line
+        {...shared}
+        points={element.points}
+        stroke={element.stroke}
+        strokeWidth={element.strokeWidth}
+        hitStrokeWidth={24}
+        lineCap="round"
+      />
+    );
   return <RasterImage element={element} shared={shared} />;
 }
 
@@ -144,9 +227,11 @@ function SelectionTransformer() {
   const anchors =
     selected?.kind === "text"
       ? ["top-left", "top-right", "bottom-left", "bottom-right", "middle-left", "middle-right"]
-      : selected?.kind === "circle"
+      : selected?.kind === "circle" || selected?.kind === "polygon" || selected?.kind === "star"
         ? ["top-left", "top-right", "bottom-left", "bottom-right"]
-        : undefined;
+        : selected?.kind === "arrow" || selected?.kind === "line"
+          ? ["middle-left", "middle-right"]
+          : undefined;
   return (
     <Transformer
       ref={transformer}
@@ -451,21 +536,7 @@ export function DesignCanvas() {
     setTool("select");
   };
   const addShape = (position: CanvasPan) => {
-    add({
-      id: id(),
-      name: t("defaults.rectangle"),
-      kind: "rect",
-      x: position.x,
-      y: position.y,
-      width: 260,
-      height: 160,
-      fill: "#6C7CFF",
-      radius: 22,
-      rotation: 0,
-      opacity: 1,
-      hidden: false,
-      locked: false,
-    });
+    add(createShapeElement("rectangle", position, t("shapes.rectangle")));
     setTool("select");
   };
 

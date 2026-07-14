@@ -47,7 +47,24 @@
     "rect": "사각형",
     "circle": "원",
     "image": "이미지",
+    "ellipse": "타원",
+    "polygon": "다각형",
+    "star": "별",
+    "arrow": "화살표",
+    "line": "선",
     "noSelection": "선택 없음"
+  },
+  "shapes": {
+    "title": "도형",
+    "rectangle": "사각형",
+    "rounded": "둥근 사각형",
+    "circle": "원",
+    "ellipse": "타원",
+    "triangle": "삼각형",
+    "polygon": "다각형",
+    "star": "별",
+    "arrow": "화살표",
+    "line": "선"
   },
   "properties": {
     "title": "속성",
@@ -68,7 +85,12 @@
     "radius": "모서리 반경",
     "image": "이미지",
     "replaceImage": "이미지 교체",
-    "brightness": "밝기"
+    "brightness": "밝기",
+    "stroke": "선 색상",
+    "strokeWidth": "두께",
+    "sides": "변의 수",
+    "starPoints": "꼭짓점 수",
+    "innerRadius": "내부 반경"
   },
   "defaults": {
     "newText": "새 텍스트",

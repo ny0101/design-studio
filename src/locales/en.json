@@ -47,7 +47,24 @@
     "rect": "Rectangle",
     "circle": "Circle",
     "image": "Image",
+    "ellipse": "Ellipse",
+    "polygon": "Polygon",
+    "star": "Star",
+    "arrow": "Arrow",
+    "line": "Line",
     "noSelection": "No selection"
+  },
+  "shapes": {
+    "title": "Shapes",
+    "rectangle": "Rectangle",
+    "rounded": "Rounded rectangle",
+    "circle": "Circle",
+    "ellipse": "Ellipse",
+    "triangle": "Triangle",
+    "polygon": "Polygon",
+    "star": "Star",
+    "arrow": "Arrow",
+    "line": "Line"
   },
   "properties": {
     "title": "Properties",
@@ -68,7 +85,12 @@
     "radius": "Radius",
     "image": "Image",
     "replaceImage": "Replace image",
-    "brightness": "Brightness"
+    "brightness": "Brightness",
+    "stroke": "Stroke",
+    "strokeWidth": "Thickness",
+    "sides": "Sides",
+    "starPoints": "Points",
+    "innerRadius": "Inner radius"
   },
   "defaults": {
     "newText": "New text",

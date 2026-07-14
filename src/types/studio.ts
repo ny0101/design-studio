@@ -10,7 +10,16 @@ export type StudioTool =
   | "elements"
   | "template"
   | "upload";
-export type ElementKind = "text" | "rect" | "circle" | "image";
+export type ElementKind =
+  | "text"
+  | "rect"
+  | "circle"
+  | "image"
+  | "ellipse"
+  | "polygon"
+  | "star"
+  | "arrow"
+  | "line";
 
 export interface BaseElement {
   id: string;
@@ -57,7 +66,54 @@ export interface ImageElement extends BaseElement {
   brightness: number;
 }
 
-export type CanvasElement = TextElement | RectElement | CircleElement | ImageElement;
+export interface EllipseElement extends BaseElement {
+  kind: "ellipse";
+  radiusX: number;
+  radiusY: number;
+  fill: string;
+}
+
+export interface PolygonElement extends BaseElement {
+  kind: "polygon";
+  sides: number;
+  radius: number;
+  fill: string;
+}
+
+export interface StarElement extends BaseElement {
+  kind: "star";
+  points: number;
+  innerRadius: number;
+  outerRadius: number;
+  fill: string;
+}
+
+export interface ArrowElement extends BaseElement {
+  kind: "arrow";
+  points: number[];
+  stroke: string;
+  strokeWidth: number;
+  pointerLength: number;
+  pointerWidth: number;
+}
+
+export interface LineElement extends BaseElement {
+  kind: "line";
+  points: number[];
+  stroke: string;
+  strokeWidth: number;
+}
+
+export type CanvasElement =
+  | TextElement
+  | RectElement
+  | CircleElement
+  | ImageElement
+  | EllipseElement
+  | PolygonElement
+  | StarElement
+  | ArrowElement
+  | LineElement;
 
 export interface CanvasPan {
   x: number;

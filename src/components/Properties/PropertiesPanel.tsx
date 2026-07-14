@@ -203,6 +203,86 @@ function Properties({
           />
         </section>
       )}
+      {element.kind === "ellipse" && (
+        <section>
+          <h3>{t("properties.shape")}</h3>
+          <label className="property-field color">
+            <span>{t("properties.fill")}</span>
+            <input
+              type="color"
+              value={element.fill}
+              onChange={(event) => change({ fill: event.target.value })}
+            />
+          </label>
+        </section>
+      )}
+      {element.kind === "polygon" && (
+        <section>
+          <h3>{t("properties.shape")}</h3>
+          <label className="property-field color">
+            <span>{t("properties.fill")}</span>
+            <input
+              type="color"
+              value={element.fill}
+              onChange={(event) => change({ fill: event.target.value })}
+            />
+          </label>
+          <NumberField
+            label={t("properties.sides")}
+            value={element.sides}
+            min={3}
+            max={12}
+            onChange={(value) => change({ sides: value })}
+          />
+        </section>
+      )}
+      {element.kind === "star" && (
+        <section>
+          <h3>{t("properties.shape")}</h3>
+          <label className="property-field color">
+            <span>{t("properties.fill")}</span>
+            <input
+              type="color"
+              value={element.fill}
+              onChange={(event) => change({ fill: event.target.value })}
+            />
+          </label>
+          <NumberField
+            label={t("properties.starPoints")}
+            value={element.points}
+            min={3}
+            max={12}
+            onChange={(value) => change({ points: value })}
+          />
+          <NumberField
+            label={t("properties.innerRadius")}
+            value={Math.round(element.innerRadius)}
+            min={5}
+            max={400}
+            onChange={(value) => change({ innerRadius: value })}
+          />
+        </section>
+      )}
+      {(element.kind === "arrow" || element.kind === "line") && (
+        <section>
+          <h3>{t("properties.shape")}</h3>
+          <label className="property-field color">
+            <span>{t("properties.stroke")}</span>
+            <input
+              type="color"
+              value={element.stroke}
+              onChange={(event) => change({ stroke: event.target.value })}
+            />
+          </label>
+          <NumberField
+            label={t("properties.strokeWidth")}
+            value={element.strokeWidth}
+            min={1}
+            max={40}
+            onChange={(value) => change({ strokeWidth: value })}
+          />
+        </section>
+      )}
       {element.kind === "image" && (
         <section>
           <h3>{t("properties.image")}</h3>

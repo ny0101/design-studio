@@ -1,5 +1,6 @@
 import { About } from "./components/About";
 import { DesignCanvas } from "./components/Canvas/DesignCanvas";
+import { ShapePicker } from "./components/Sidebar/ShapePicker";
 import { Footer } from "./components/Footer";
 import { PropertiesPanel } from "./components/Properties/PropertiesPanel";
 import { Sidebar } from "./components/Sidebar/Sidebar";
@@ -10,7 +11,7 @@ import { useTranslation } from "./hooks/useTranslation";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 
 export default function App() {
-  const { theme, view } = useStudioStore();
+  const { theme, view, activeTool } = useStudioStore();
   const { t } = useTranslation();
   useKeyboardShortcuts();
   return (
@@ -20,6 +21,7 @@ export default function App() {
         <Sidebar />
         <main className="main-content">
           {view === "about" ? <About /> : <DesignCanvas />}
+          {view === "studio" && activeTool === "shape" && <ShapePicker />}
         </main>
         {view === "studio" && <LayersPanel />}
         {view === "studio" && <PropertiesPanel />}
