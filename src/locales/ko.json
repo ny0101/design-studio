@@ -16,7 +16,26 @@
     "preview": "미리보기",
     "export": "내보내기",
     "settings": "설정",
-    "language": "언어 전환"
+    "language": "언어 전환",
+    "zoomMenu": "줌 프리셋",
+    "zoomFit": "화면에 맞추기"
+  },
+  "menu": {
+    "newDocument": "새 문서",
+    "openProject": "프로젝트 열기…",
+    "saveProject": "프로젝트 저장",
+    "lightTheme": "라이트 테마",
+    "darkTheme": "다크 테마"
+  },
+  "sizes": {
+    "instagramPost": "인스타그램 게시물",
+    "instagramStory": "인스타그램 스토리",
+    "youtubeThumbnail": "유튜브 썸네일",
+    "presentation": "프레젠테이션",
+    "a4": "A4 문서",
+    "width": "가로",
+    "height": "세로",
+    "apply": "적용"
   },
   "tools": {
     "select": "선택",

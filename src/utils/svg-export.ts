@@ -182,10 +182,14 @@ function renderElement(element: CanvasElement): string {
   }
 }
 
-export function buildSvg(elements: CanvasElement[], size: number): string {
+export function buildSvg(
+  elements: CanvasElement[],
+  width: number,
+  height: number,
+): string {
   const body = elements
     .filter((element) => !element.hidden)
     .map(renderElement)
     .join("\n");
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">\n${body}\n</svg>`;
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">\n${body}\n</svg>`;
 }

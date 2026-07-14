@@ -1,11 +1,10 @@
 import { useMemo, useState } from "react";
 import { ICON_LIBRARY } from "../../utils/icons";
-import { CANVAS_SIZE } from "../Canvas/DesignCanvas";
 import { useStudioStore } from "../../store/studio-store";
 import { useTranslation } from "../../hooks/useTranslation";
 
 export function IconPicker() {
-  const { add, setTool } = useStudioStore();
+  const { add, setTool, canvasSize } = useStudioStore();
   const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const filtered = useMemo(() => {
@@ -20,8 +19,8 @@ export function IconPicker() {
       kind: "icon",
       icon: name,
       color: "#16181D",
-      x: CANVAS_SIZE / 2 - 64,
-      y: CANVAS_SIZE / 2 - 64,
+      x: canvasSize.width / 2 - 64,
+      y: canvasSize.height / 2 - 64,
       width: 128,
       height: 128,
       strokeWidth: 2,

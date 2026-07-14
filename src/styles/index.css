@@ -414,23 +414,106 @@ button:disabled {
 }
 .canvas-meta {
   position: absolute;
+  z-index: 6;
   top: 10px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
   width: fit-content;
-  padding: 6px 10px;
+  padding: 4px 10px;
   border: 1px solid #373a43;
   border-radius: 7px;
   color: #aeb3c0;
   background: #26282f;
   font-size: 10px;
-  pointer-events: none;
 }
-.canvas-meta span + span {
-  margin-left: 14px;
+.size-menu {
+  position: relative;
+}
+.size-menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 4px;
+  border: 0;
+  border-radius: 5px;
   color: #dfe3eb;
+  background: transparent;
+  font-size: 10px;
+}
+.size-menu-trigger:hover {
+  background: #363944;
+}
+.size-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: grid;
+  min-width: 216px;
+  padding: 5px;
+  border: 1px solid #373a43;
+  border-radius: 9px;
+  background: #26282f;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.4);
+}
+.size-dropdown > button {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 9px;
+  border: 0;
+  border-radius: 6px;
+  color: #dfe3eb;
+  background: transparent;
+  font-size: 11px;
+}
+.size-dropdown > button:hover,
+.size-dropdown > button.selected {
+  color: #fff;
+  background: #363944;
+}
+.size-dropdown > button em {
+  color: #8a8f9c;
+  font-style: normal;
+}
+.size-custom {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 5px;
+  padding: 6px 5px 3px;
+  border-top: 1px solid #373a43;
+  color: #8a8f9c;
+  font-size: 10px;
+}
+.size-custom input {
+  width: 56px;
+  padding: 5px 6px;
+  border: 1px solid #373a43;
+  border-radius: 6px;
+  color: #e3e6ed;
+  background: #1d1e23;
+  font-size: 11px;
+}
+.size-custom input:focus {
+  border-color: #6c7cff;
+  outline: none;
+}
+.size-custom button {
+  margin-left: auto;
+  padding: 5px 10px;
+  border: 1px solid #373a43;
+  border-radius: 6px;
+  color: #dfe3eb;
+  background: transparent;
+  font-size: 10px;
+}
+.size-custom button:hover {
+  border-color: #6c7cff;
+  color: #fff;
 }
 .export-menu {
   position: relative;
@@ -853,6 +936,35 @@ footer span:first-of-type {
 .app-shell[data-theme="light"] .brand,
 .app-shell[data-theme="light"] .panel-heading p {
   color: #22242a;
+}
+.app-shell[data-theme="light"] .tool-item,
+.app-shell[data-theme="light"] .layer-row,
+.app-shell[data-theme="light"] .toolbar-icon,
+.app-shell[data-theme="light"] .language-toggle,
+.app-shell[data-theme="light"] .zoom-control button {
+  color: #4a4e5a;
+}
+.app-shell[data-theme="light"] .tool-item:hover,
+.app-shell[data-theme="light"] .tool-item.active,
+.app-shell[data-theme="light"] .layer-row:hover,
+.app-shell[data-theme="light"] .layer-row.active,
+.app-shell[data-theme="light"] .toolbar-icon:hover,
+.app-shell[data-theme="light"] .toolbar-icon.selected,
+.app-shell[data-theme="light"] .language-toggle:hover,
+.app-shell[data-theme="light"] .zoom-control button:hover {
+  color: #16181d;
+  background: #eceef2;
+  border-color: #d7dae2;
+}
+.app-shell[data-theme="light"] .zoom-control {
+  border-color: #d7dae2;
+  background: #f6f7f9;
+}
+.app-shell[data-theme="light"] .zoom-control span,
+.app-shell[data-theme="light"] .property-field,
+.app-shell[data-theme="light"] .property-toggle,
+.app-shell[data-theme="light"] .empty-properties {
+  color: #4a4e5a;
 }
 @media (max-width: 840px) {
   .toolbar-button:not(.primary) {
