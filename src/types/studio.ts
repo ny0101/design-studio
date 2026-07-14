@@ -32,6 +32,7 @@ export interface BaseElement {
   opacity: number;
   hidden: boolean;
   locked: boolean;
+  groupId?: string;
 }
 
 export interface ElementShadow {
@@ -179,7 +180,7 @@ export interface StudioState {
   showRulers: boolean;
   showSafeArea: boolean;
   elements: CanvasElement[];
-  selectedId: string | null;
+  selectedIds: string[];
   clipboard: CanvasElement[];
   past: CanvasElement[][];
   future: CanvasElement[][];

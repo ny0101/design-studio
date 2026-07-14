@@ -81,6 +81,29 @@ const saveHistory = (state: StudioState) => ({
   future: [],
 });
 
+const PASTE_OFFSET = 24;
+
+const withNewId = (element: CanvasElement, offset = PASTE_OFFSET): CanvasElement => ({
+  ...element,
+  id: crypto.randomUUID(),
+  x: element.x + offset,
+  y: element.y + offset,
+});
+
+const cloneSelection = (elements: CanvasElement[]): CanvasElement[] => {
+  const groupMap = new Map<string, string>();
+  return elements.map((element) => {
+    const copy = withNewId(element);
+    if (element.groupId) {
+      if (!groupMap.has(element.groupId)) {
+        groupMap.set(element.groupId, crypto.randomUUID());
+      }
+      copy.groupId = groupMap.get(element.groupId);
+    }
+    return copy;
+  });
+};
+
 interface StudioActions {
   setView: (view: WorkspaceView) => void;
   setTheme: (theme: ColorTheme) => void;
@@ -92,26 +115,23 @@ interface StudioActions {
   toggleGuides: () => void;
   toggleRulers: () => void;
   toggleSafeArea: () => void;
-  select: (id: string | null) => void;
+  select: (id: string | null, options?: { expandGroup?: boolean }) => void;
+  toggleSelect: (id: string) => void;
   add: (element: CanvasElement, options?: { select?: boolean }) => void;
   update: (id: string, patch: Partial<CanvasElement>) => void;
+  updateMany: (entries: { id: string; patch: Partial<CanvasElement> }[]) => void;
+  rename: (id: string, name: string) => void;
   remove: (id: string) => void;
+  removeSelected: () => void;
   reorder: (id: string, direction: "up" | "down") => void;
   copy: () => void;
   paste: () => void;
   duplicate: (id?: string) => void;
+  group: () => void;
+  ungroup: () => void;
   undo: () => void;
   redo: () => void;
 }
-
-const PASTE_OFFSET = 24;
-
-const withNewId = (element: CanvasElement, offset = PASTE_OFFSET): CanvasElement => ({
-  ...element,
-  id: crypto.randomUUID(),
-  x: element.x + offset,
-  y: element.y + offset,
-});
 
 export const useStudioStore = create<StudioState & StudioActions>((set) => ({
   view: "studio",
@@ -125,7 +145,7 @@ export const useStudioStore = create<StudioState & StudioActions>((set) => ({
   showRulers: false,
   showSafeArea: false,
   elements: initialElements,
-  selectedId: "heading",
+  selectedIds: ["heading"],
   clipboard: [],
   past: [],
   future: [],
@@ -142,12 +162,31 @@ export const useStudioStore = create<StudioState & StudioActions>((set) => ({
   toggleGuides: () => set((state) => ({ showGuides: !state.showGuides })),
   toggleRulers: () => set((state) => ({ showRulers: !state.showRulers })),
   toggleSafeArea: () => set((state) => ({ showSafeArea: !state.showSafeArea })),
-  select: (selectedId) => set({ selectedId }),
+  select: (id, options) =>
+    set((state) => {
+      if (!id) return { selectedIds: [] };
+      const target = state.elements.find((item) => item.id === id);
+      if (!target) return state;
+      if (options?.expandGroup && target.groupId) {
+        return {
+          selectedIds: state.elements
+            .filter((item) => item.groupId === target.groupId)
+            .map((item) => item.id),
+        };
+      }
+      return { selectedIds: [id] };
+    }),
+  toggleSelect: (id) =>
+    set((state) => ({
+      selectedIds: state.selectedIds.includes(id)
+        ? state.selectedIds.filter((item) => item !== id)
+        : [...state.selectedIds, id],
+    })),
   add: (element, options) =>
     set((state) => ({
       ...saveHistory(state),
       elements: [...state.elements, element],
-      selectedId: options?.select === false ? state.selectedId : element.id,
+      selectedIds: options?.select === false ? state.selectedIds : [element.id],
     })),
   update: (id, patch) =>
     set((state) => ({
@@ -156,12 +195,44 @@ export const useStudioStore = create<StudioState & StudioActions>((set) => ({
         item.id === id ? ({ ...item, ...patch } as CanvasElement) : item,
       ),
     })),
+  updateMany: (entries) =>
+    set((state) => {
+      const patches = new Map(entries.map((entry) => [entry.id, entry.patch]));
+      return {
+        ...saveHistory(state),
+        elements: state.elements.map((item) => {
+          const patch = patches.get(item.id);
+          return patch ? ({ ...item, ...patch } as CanvasElement) : item;
+        }),
+      };
+    }),
+  rename: (id, name) =>
+    set((state) => ({
+      ...saveHistory(state),
+      elements: state.elements.map((item) =>
+        item.id === id ? { ...item, name } : item,
+      ),
+    })),
   remove: (id) =>
     set((state) => ({
       ...saveHistory(state),
       elements: state.elements.filter((item) => item.id !== id),
-      selectedId: state.selectedId === id ? null : state.selectedId,
+      selectedIds: state.selectedIds.filter((item) => item !== id),
     })),
+  removeSelected: () =>
+    set((state) => {
+      const removable = new Set(
+        state.elements
+          .filter((item) => state.selectedIds.includes(item.id) && !item.locked)
+          .map((item) => item.id),
+      );
+      if (!removable.size) return state;
+      return {
+        ...saveHistory(state),
+        elements: state.elements.filter((item) => !removable.has(item.id)),
+        selectedIds: [],
+      };
+    }),
   reorder: (id, direction) =>
     set((state) => {
       const index = state.elements.findIndex((item) => item.id === id);
@@ -173,29 +244,58 @@ export const useStudioStore = create<StudioState & StudioActions>((set) => ({
     }),
   copy: () =>
     set((state) => {
-      const selected = state.elements.find((item) => item.id === state.selectedId);
-      return selected ? { clipboard: [{ ...selected }] } : state;
+      const selected = state.elements.filter((item) =>
+        state.selectedIds.includes(item.id),
+      );
+      return selected.length ? { clipboard: clone(selected) } : state;
     }),
   paste: () =>
     set((state) => {
       if (!state.clipboard.length) return state;
-      const pasted = state.clipboard.map((item) => withNewId(item));
+      const pasted = cloneSelection(state.clipboard);
       return {
         ...saveHistory(state),
         elements: [...state.elements, ...pasted],
-        selectedId: pasted[pasted.length - 1].id,
+        selectedIds: pasted.map((item) => item.id),
       };
     }),
   duplicate: (id) =>
     set((state) => {
-      const targetId = id ?? state.selectedId;
-      const source = state.elements.find((item) => item.id === targetId);
-      if (!source) return state;
-      const copy = withNewId(source);
+      const sources = id
+        ? state.elements.filter((item) => item.id === id)
+        : state.elements.filter((item) => state.selectedIds.includes(item.id));
+      if (!sources.length) return state;
+      const copies = cloneSelection(sources);
       return {
         ...saveHistory(state),
-        elements: [...state.elements, copy],
-        selectedId: copy.id,
+        elements: [...state.elements, ...copies],
+        selectedIds: copies.map((item) => item.id),
+      };
+    }),
+  group: () =>
+    set((state) => {
+      if (state.selectedIds.length < 2) return state;
+      const groupId = crypto.randomUUID();
+      return {
+        ...saveHistory(state),
+        elements: state.elements.map((item) =>
+          state.selectedIds.includes(item.id) ? { ...item, groupId } : item,
+        ),
+      };
+    }),
+  ungroup: () =>
+    set((state) => {
+      const hasGroup = state.elements.some(
+        (item) => state.selectedIds.includes(item.id) && item.groupId,
+      );
+      if (!hasGroup) return state;
+      return {
+        ...saveHistory(state),
+        elements: state.elements.map((item) =>
+          state.selectedIds.includes(item.id)
+            ? { ...item, groupId: undefined }
+            : item,
+        ),
       };
     }),
   undo: () =>

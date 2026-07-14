@@ -149,16 +149,19 @@ function ElementNode({
   editingId: string | null;
   onEditText: (id: string) => void;
 }) {
-  const { select, update, add } = useStudioStore();
+  const { select, toggleSelect, update } = useStudioStore();
   if (element.hidden) return null;
-  const selectNode = () => select(element.id);
-  const dragStart = (event: KonvaEventObject<DragEvent>) => {
-    if (event.evt.altKey) {
-      add({ ...element, id: id() }, { select: false });
+  const selectNode = (
+    event: KonvaEventObject<MouseEvent> | KonvaEventObject<TouchEvent>,
+  ) => {
+    const shift = "shiftKey" in event.evt && event.evt.shiftKey;
+    if (shift) {
+      toggleSelect(element.id);
+      return;
     }
+    const { selectedIds } = useStudioStore.getState();
+    if (!selectedIds.includes(element.id)) select(element.id, { expandGroup: true });
   };
-  const dragEnd = (event: KonvaEventObject<DragEvent>) =>
-    update(element.id, { x: event.target.x(), y: event.target.y() });
   const transformEnd = (event: KonvaEventObject<Event>) => {
     const node = event.target;
     const scaleX = Math.abs(node.scaleX());
@@ -217,12 +220,8 @@ function ElementNode({
     rotation: element.rotation,
     opacity: element.opacity,
     draggable: !element.locked,
-    onClick: selectNode,
-    onTap: selectNode,
     onMouseDown: selectNode,
-    onTouchStart: selectNode,
-    onDragStart: dragStart,
-    onDragEnd: dragEnd,
+    onTap: selectNode,
     onTransformEnd: transformEnd,
   };
   if (element.kind === "text")
@@ -323,27 +322,31 @@ function ElementNode({
 
 function SelectionTransformer() {
   const transformer = useRef<Konva.Transformer>(null);
-  const { elements, selectedId } = useStudioStore();
-  const selected = elements.find((item) => item.id === selectedId);
+  const { elements, selectedIds } = useStudioStore();
+  const selectedElements = elements.filter(
+    (item) => selectedIds.includes(item.id) && !item.locked && !item.hidden,
+  );
   useEffect(() => {
     const node = transformer.current;
     if (!node) return;
     const stage = node.getStage();
-    const target =
-      selected && !selected.locked && !selected.hidden
-        ? stage?.findOne(`#${selected.id}`)
-        : undefined;
-    node.nodes(target ? [target] : []);
+    const targets = selectedElements
+      .map((item) => stage?.findOne(`#${item.id}`))
+      .filter((target): target is NonNullable<typeof target> => Boolean(target));
+    node.nodes(targets);
     node.getLayer()?.batchDraw();
-  }, [selected, elements]);
+  }, [selectedElements, elements]);
+  const selected = selectedElements.length === 1 ? selectedElements[0] : undefined;
   const anchors =
-    selected?.kind === "text"
-      ? ["top-left", "top-right", "bottom-left", "bottom-right", "middle-left", "middle-right"]
-      : selected?.kind === "circle" || selected?.kind === "polygon" || selected?.kind === "star"
-        ? ["top-left", "top-right", "bottom-left", "bottom-right"]
-        : selected?.kind === "arrow" || selected?.kind === "line"
-          ? ["middle-left", "middle-right"]
-          : undefined;
+    selectedElements.length > 1
+      ? ["top-left", "top-right", "bottom-left", "bottom-right"]
+      : selected?.kind === "text"
+        ? ["top-left", "top-right", "bottom-left", "bottom-right", "middle-left", "middle-right"]
+        : selected?.kind === "circle" || selected?.kind === "polygon" || selected?.kind === "star"
+          ? ["top-left", "top-right", "bottom-left", "bottom-right"]
+          : selected?.kind === "arrow" || selected?.kind === "line"
+            ? ["middle-left", "middle-right"]
+            : undefined;
   return (
     <Transformer
       ref={transformer}
@@ -442,6 +445,10 @@ export function DesignCanvas() {
   const snapV = useRef<Konva.Line>(null);
   const snapH = useRef<Konva.Line>(null);
   const snapTargets = useRef<SnapTargets>({ vertical: [], horizontal: [] });
+  const dragOrigin = useRef<CanvasPan | null>(null);
+  const multiDrag = useRef<
+    { id: string; node: Konva.Node; startX: number; startY: number }[] | null
+  >(null);
   const [viewport, setViewport] = useState({ width: 0, height: 0 });
   const [panning, setPanning] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -554,24 +561,24 @@ export function DesignCanvas() {
     }
   };
 
-  const collectSnapTargets = useCallback(
-    (dragged: Konva.Node) => {
-      const layer = dragged.getLayer();
-      const vertical = [0, CANVAS_SIZE / 2, CANVAS_SIZE];
-      const horizontal = [0, CANVAS_SIZE / 2, CANVAS_SIZE];
-      const state = useStudioStore.getState();
-      for (const element of state.elements) {
-        if (element.id === dragged.id() || element.hidden) continue;
-        const node = layer?.findOne(`#${element.id}`);
-        if (!node) continue;
-        const box = node.getClientRect({ relativeTo: layer ?? undefined, skipShadow: true });
-        vertical.push(box.x, box.x + box.width / 2, box.x + box.width);
-        horizontal.push(box.y, box.y + box.height / 2, box.y + box.height);
-      }
-      snapTargets.current = { vertical, horizontal };
-    },
-    [],
-  );
+  const collectSnapTargets = useCallback((dragged: Konva.Node) => {
+    const layer = dragged.getLayer();
+    const vertical = [0, CANVAS_SIZE / 2, CANVAS_SIZE];
+    const horizontal = [0, CANVAS_SIZE / 2, CANVAS_SIZE];
+    const state = useStudioStore.getState();
+    const moving = new Set(
+      state.selectedIds.includes(dragged.id()) ? state.selectedIds : [dragged.id()],
+    );
+    for (const element of state.elements) {
+      if (moving.has(element.id) || element.hidden) continue;
+      const node = layer?.findOne(`#${element.id}`);
+      if (!node) continue;
+      const box = node.getClientRect({ relativeTo: layer ?? undefined, skipShadow: true });
+      vertical.push(box.x, box.x + box.width / 2, box.x + box.width);
+      horizontal.push(box.y, box.y + box.height / 2, box.y + box.height);
+    }
+    snapTargets.current = { vertical, horizontal };
+  }, []);
 
   const hideSnapLines = () => {
     snapV.current?.visible(false);
@@ -579,8 +586,48 @@ export function DesignCanvas() {
     overlayRef.current?.batchDraw();
   };
 
+  const onLayerDragEnd = (event: KonvaEventObject<DragEvent>) => {
+    hideSnapLines();
+    const node = event.target;
+    const state = useStudioStore.getState();
+    if (multiDrag.current?.length) {
+      state.updateMany([
+        { id: node.id(), patch: { x: node.x(), y: node.y() } },
+        ...multiDrag.current.map((item) => ({
+          id: item.id,
+          patch: { x: item.node.x(), y: item.node.y() },
+        })),
+      ]);
+    } else {
+      state.update(node.id(), { x: node.x(), y: node.y() });
+    }
+    multiDrag.current = null;
+    dragOrigin.current = null;
+  };
+
   const onLayerDragStart = (event: KonvaEventObject<DragEvent>) => {
-    collectSnapTargets(event.target);
+    const node = event.target;
+    const state = useStudioStore.getState();
+    if (event.evt.altKey) {
+      const element = state.elements.find((item) => item.id === node.id());
+      if (element) state.add({ ...element, id: id() }, { select: false });
+    }
+    collectSnapTargets(node);
+    dragOrigin.current = { x: node.x(), y: node.y() };
+    if (state.selectedIds.includes(node.id()) && state.selectedIds.length > 1) {
+      const layer = node.getLayer();
+      multiDrag.current = state.selectedIds
+        .filter((selectedId) => selectedId !== node.id())
+        .flatMap((selectedId) => {
+          const element = state.elements.find((item) => item.id === selectedId);
+          const other = layer?.findOne(`#${selectedId}`);
+          return other && element && !element.locked
+            ? [{ id: selectedId, node: other, startX: other.x(), startY: other.y() }]
+            : [];
+        });
+    } else {
+      multiDrag.current = null;
+    }
   };
 
   const onLayerDragMove = (event: KonvaEventObject<DragEvent>) => {
@@ -609,6 +656,13 @@ export function DesignCanvas() {
     }
     if (bestV) node.x(node.x() + bestV.delta);
     if (bestH) node.y(node.y() + bestH.delta);
+    if (multiDrag.current && dragOrigin.current) {
+      const dx = node.x() - dragOrigin.current.x;
+      const dy = node.y() - dragOrigin.current.y;
+      for (const item of multiDrag.current) {
+        item.node.position({ x: item.startX + dx, y: item.startY + dy });
+      }
+    }
     const range = 100000;
     if (snapV.current) {
       snapV.current.visible(Boolean(bestV));
@@ -733,7 +787,7 @@ export function DesignCanvas() {
               listening={!panning}
               onDragStart={onLayerDragStart}
               onDragMove={onLayerDragMove}
-              onDragEnd={hideSnapLines}
+              onDragEnd={onLayerDragEnd}
             >
               <Rect
                 x={0}

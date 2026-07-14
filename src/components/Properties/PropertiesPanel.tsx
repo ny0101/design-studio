@@ -397,9 +397,13 @@ function EmptyProperties() {
 }
 
 export function PropertiesPanel() {
-  const { elements, selectedId, update } = useStudioStore();
+  const { elements, selectedIds, update } = useStudioStore();
   const { t } = useTranslation();
-  const selected = elements.find((element) => element.id === selectedId);
+  const selected =
+    selectedIds.length === 1
+      ? elements.find((element) => element.id === selectedIds[0])
+      : undefined;
+  const multiCount = selectedIds.length;
   const upload = async (file: File) => {
     if (!selected || selected.kind !== "image") return;
     const { src, naturalWidth, naturalHeight } = await loadImageSource(file);
@@ -414,9 +418,22 @@ export function PropertiesPanel() {
     <aside className="properties-panel">
       <div className="panel-heading">
         <p>{t("properties.title")}</p>
-        <span>{selected ? t(`kinds.${selected.kind}`) : t("kinds.noSelection")}</span>
+        <span>
+          {selected
+            ? t(`kinds.${selected.kind}`)
+            : multiCount > 1
+              ? t("properties.multiSelected", { count: multiCount })
+              : t("kinds.noSelection")}
+        </span>
       </div>
-      {!selected && <EmptyProperties />}
+      {!selected && multiCount <= 1 && <EmptyProperties />}
+      {!selected && multiCount > 1 && (
+        <div className="empty-properties">
+          <SlidersHorizontal size={24} />
+          <b>{t("properties.multiSelected", { count: multiCount })}</b>
+          <p>{t("properties.multiHint")}</p>
+        </div>
+      )}
       {selected && <Properties element={selected} update={update} upload={upload} />}
     </aside>
   );

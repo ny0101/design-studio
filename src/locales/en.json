@@ -40,7 +40,10 @@
     "sendBackward": "Send backward",
     "toggleVisibility": "Toggle visibility",
     "toggleLock": "Toggle lock",
-    "delete": "Delete"
+    "delete": "Delete",
+    "duplicate": "Duplicate",
+    "group": "Group (Ctrl+G)",
+    "ungroup": "Ungroup (Ctrl+Shift+G)"
   },
   "kinds": {
     "text": "Text",
@@ -76,6 +79,8 @@
     "title": "Properties",
     "emptyTitle": "Select an element",
     "emptyHint": "Choose a layer on the canvas to edit its properties.",
+    "multiSelected": "{count} elements",
+    "multiHint": "Move, group (Ctrl+G), duplicate, or delete the selection together.",
     "transform": "Transform",
     "opacity": "Opacity",
     "rotation": "Rotation",
