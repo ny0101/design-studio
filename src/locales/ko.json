@@ -52,7 +52,13 @@
     "star": "별",
     "arrow": "화살표",
     "line": "선",
+    "icon": "아이콘",
     "noSelection": "선택 없음"
+  },
+  "icons": {
+    "title": "아이콘",
+    "search": "아이콘 검색",
+    "empty": "아이콘을 찾을 수 없습니다"
   },
   "shapes": {
     "title": "도형",
@@ -110,6 +116,7 @@
     "flipV": "상하 반전",
     "crop": "자르기",
     "cropOriginal": "원본 비율",
+    "icon": "아이콘",
     "stroke": "선 색상",
     "strokeWidth": "두께",
     "sides": "변의 수",

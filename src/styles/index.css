@@ -261,6 +261,52 @@ button:disabled {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+.icon-panel {
+  width: 248px;
+}
+.icon-search {
+  width: 100%;
+  margin-bottom: 9px;
+  padding: 6px 9px;
+  border: 1px solid #373a43;
+  border-radius: 7px;
+  color: #e3e6ed;
+  background: #1d1e23;
+  font-size: 11px;
+}
+.icon-search:focus {
+  border-color: #6c7cff;
+  outline: none;
+}
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 3px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+.icon-grid button {
+  display: grid;
+  place-items: center;
+  height: 32px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: #b4b8c4;
+  background: transparent;
+}
+.icon-grid button:hover {
+  border-color: #464a56;
+  color: #fff;
+  background: #30323a;
+}
+.icon-empty {
+  grid-column: 1 / -1;
+  margin: 12px 0;
+  color: #8a8f9c;
+  font-size: 11px;
+  text-align: center;
+}
 .native-canvas {
   height: 100%;
   min-height: 680px;

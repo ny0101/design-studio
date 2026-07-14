@@ -1,6 +1,7 @@
 import { About } from "./components/About";
 import { DesignCanvas } from "./components/Canvas/DesignCanvas";
 import { ShapePicker } from "./components/Sidebar/ShapePicker";
+import { IconPicker } from "./components/Sidebar/IconPicker";
 import { Footer } from "./components/Footer";
 import { PropertiesPanel } from "./components/Properties/PropertiesPanel";
 import { Sidebar } from "./components/Sidebar/Sidebar";
@@ -22,6 +23,7 @@ export default function App() {
         <main className="main-content">
           {view === "about" ? <About /> : <DesignCanvas />}
           {view === "studio" && activeTool === "shape" && <ShapePicker />}
+          {view === "studio" && activeTool === "elements" && <IconPicker />}
         </main>
         {view === "studio" && <LayersPanel />}
         {view === "studio" && <PropertiesPanel />}

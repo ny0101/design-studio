@@ -52,7 +52,13 @@
     "star": "Star",
     "arrow": "Arrow",
     "line": "Line",
+    "icon": "Icon",
     "noSelection": "No selection"
+  },
+  "icons": {
+    "title": "Icons",
+    "search": "Search icons",
+    "empty": "No icons found"
   },
   "shapes": {
     "title": "Shapes",
@@ -110,6 +116,7 @@
     "flipV": "Flip vertical",
     "crop": "Crop",
     "cropOriginal": "Original",
+    "icon": "Icon",
     "stroke": "Stroke",
     "strokeWidth": "Thickness",
     "sides": "Sides",

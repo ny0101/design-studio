@@ -591,6 +591,26 @@ function Properties({
       {element.kind === "image" && (
         <ImageProperties element={element} change={change} upload={upload} />
       )}
+      {element.kind === "icon" && (
+        <section>
+          <h3>{t("properties.icon")}</h3>
+          <label className="property-field color">
+            <span>{t("properties.color")}</span>
+            <input
+              type="color"
+              value={element.color}
+              onChange={(event) => change({ color: event.target.value })}
+            />
+          </label>
+          <NumberField
+            label={t("properties.strokeWidth")}
+            value={element.strokeWidth ?? 2}
+            min={1}
+            max={4}
+            onChange={(value) => change({ strokeWidth: value })}
+          />
+        </section>
+      )}
     </div>
   );
 }

@@ -19,7 +19,8 @@ export type ElementKind =
   | "polygon"
   | "star"
   | "arrow"
-  | "line";
+  | "line"
+  | "icon";
 
 export interface BaseElement {
   id: string;
@@ -140,6 +141,15 @@ export interface LineElement extends BaseElement {
   strokeWidth: number;
 }
 
+export interface IconElement extends BaseElement {
+  kind: "icon";
+  icon: string;
+  color: string;
+  width: number;
+  height: number;
+  strokeWidth?: number;
+}
+
 export type CanvasElement =
   | TextElement
   | RectElement
@@ -149,7 +159,8 @@ export type CanvasElement =
   | PolygonElement
   | StarElement
   | ArrowElement
-  | LineElement;
+  | LineElement
+  | IconElement;
 
 export interface CanvasPan {
   x: number;

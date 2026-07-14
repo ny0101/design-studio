@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { createElement, useCallback, useEffect, useRef, useState } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import {
   Arrow,
   Circle,
@@ -19,9 +20,11 @@ import Konva from "konva";
 import type {
   CanvasElement,
   CanvasPan,
+  IconElement,
   ImageElement,
   TextElement,
 } from "../../types/studio";
+import { getIconComponent } from "../../utils/icons";
 import { useStudioStore } from "../../store/studio-store";
 import { useTranslation } from "../../hooks/useTranslation";
 import { createShapeElement } from "../../utils/shapes";
@@ -103,6 +106,37 @@ function RasterImage({
       shadowOffsetX={element.shadow?.offsetX}
       shadowOffsetY={element.shadow?.offsetY}
     />
+  );
+}
+
+function IconNode({
+  element,
+  shared,
+}: {
+  element: IconElement;
+  shared: Record<string, unknown>;
+}) {
+  const [image, setImage] = useState<HTMLImageElement>();
+  const rasterSize = Math.max(
+    64,
+    Math.ceil(Math.max(element.width, element.height) / 64) * 128,
+  );
+  useEffect(() => {
+    const IconComponent = getIconComponent(element.icon);
+    if (!IconComponent) return;
+    const svg = renderToStaticMarkup(
+      createElement(IconComponent, {
+        color: element.color,
+        strokeWidth: element.strokeWidth ?? 2,
+        size: rasterSize,
+      }),
+    );
+    const next = new window.Image();
+    next.onload = () => setImage(next);
+    next.src = `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+  }, [element.icon, element.color, element.strokeWidth, rasterSize]);
+  return (
+    <KonvaImage {...shared} image={image} width={element.width} height={element.height} />
   );
 }
 
@@ -283,6 +317,7 @@ function ElementNode({
         lineCap="round"
       />
     );
+  if (element.kind === "icon") return <IconNode element={element} shared={shared} />;
   return <RasterImage element={element} shared={shared} />;
 }
 
