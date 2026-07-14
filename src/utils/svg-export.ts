@@ -4,7 +4,9 @@ import type {
   ArrowElement,
   CanvasElement,
   ElementShadow,
+  FillGradient,
   ImageElement,
+  ShapeStroke,
   TextElement,
 } from "../types/studio";
 import { DEFAULT_FONT } from "./fonts";
@@ -36,6 +38,42 @@ const openGroup = (element: CanvasElement, extras = "") =>
   `<g transform="${groupTransform(element)}" opacity="${num(element.opacity)}"${
     extras ? ` ${extras}` : ""
   }>`;
+
+interface FillPaint {
+  defs: string;
+  fill: string;
+  stroke: string;
+}
+
+const uid = (element: CanvasElement) =>
+  element.id || Math.random().toString(36).slice(2, 10);
+
+const fillPaint = (
+  element: CanvasElement & { fill: string; gradient?: FillGradient; stroke?: ShapeStroke },
+  width: number,
+  height: number,
+  centered: boolean,
+): FillPaint => {
+  const strokeAttr = element.stroke?.enabled
+    ? ` stroke="${esc(element.stroke.color)}" stroke-width="${num(element.stroke.width)}"`
+    : "";
+  const gradient = element.gradient;
+  if (!gradient?.enabled) {
+    return { defs: "", fill: esc(element.fill), stroke: strokeAttr };
+  }
+  const id = `grad-${uid(element)}`;
+  const radians = (gradient.angle * Math.PI) / 180;
+  const centerX = centered ? 0 : width / 2;
+  const centerY = centered ? 0 : height / 2;
+  const halfX = (Math.cos(radians) * width) / 2;
+  const halfY = (Math.sin(radians) * height) / 2;
+  const defs =
+    `<defs><linearGradient id="${id}" gradientUnits="userSpaceOnUse" ` +
+    `x1="${num(centerX - halfX)}" y1="${num(centerY - halfY)}" x2="${num(centerX + halfX)}" y2="${num(centerY + halfY)}">` +
+    `<stop offset="0" stop-color="${esc(gradient.from)}"/><stop offset="1" stop-color="${esc(gradient.to)}"/>` +
+    `</linearGradient></defs>`;
+  return { defs, fill: `url(#${id})`, stroke: strokeAttr };
+};
 
 const polygonPoints = (sides: number, radius: number) =>
   Array.from({ length: sides }, (_, index) => {
@@ -128,31 +166,46 @@ function renderArrow(element: ArrowElement): string {
 
 function renderElement(element: CanvasElement): string {
   switch (element.kind) {
-    case "rect":
+    case "rect": {
+      const paint = fillPaint(element, element.width, element.height, false);
       return (
         openGroup(element, shadowFilter(element.shadow)) +
-        `<rect width="${num(element.width)}" height="${num(element.height)}" fill="${esc(element.fill)}" rx="${num(element.radius)}"/></g>`
+        `${paint.defs}<rect width="${num(element.width)}" height="${num(element.height)}" fill="${paint.fill}" rx="${num(element.radius)}"${paint.stroke}/></g>`
       );
-    case "circle":
+    }
+    case "circle": {
+      const paint = fillPaint(element, element.radius * 2, element.radius * 2, true);
       return (
         openGroup(element) +
-        `<circle r="${num(element.radius)}" fill="${esc(element.fill)}"/></g>`
+        `${paint.defs}<circle r="${num(element.radius)}" fill="${paint.fill}"${paint.stroke}/></g>`
       );
-    case "ellipse":
+    }
+    case "ellipse": {
+      const paint = fillPaint(element, element.radiusX * 2, element.radiusY * 2, true);
       return (
         openGroup(element) +
-        `<ellipse rx="${num(element.radiusX)}" ry="${num(element.radiusY)}" fill="${esc(element.fill)}"/></g>`
+        `${paint.defs}<ellipse rx="${num(element.radiusX)}" ry="${num(element.radiusY)}" fill="${paint.fill}"${paint.stroke}/></g>`
       );
-    case "polygon":
+    }
+    case "polygon": {
+      const paint = fillPaint(element, element.radius * 2, element.radius * 2, true);
       return (
         openGroup(element) +
-        `<polygon points="${polygonPoints(element.sides, element.radius)}" fill="${esc(element.fill)}"/></g>`
+        `${paint.defs}<polygon points="${polygonPoints(element.sides, element.radius)}" fill="${paint.fill}"${paint.stroke}/></g>`
       );
-    case "star":
+    }
+    case "star": {
+      const paint = fillPaint(
+        element,
+        element.outerRadius * 2,
+        element.outerRadius * 2,
+        true,
+      );
       return (
         openGroup(element) +
-        `<polygon points="${starPoints(element.points, element.innerRadius, element.outerRadius)}" fill="${esc(element.fill)}"/></g>`
+        `${paint.defs}<polygon points="${starPoints(element.points, element.innerRadius, element.outerRadius)}" fill="${paint.fill}"${paint.stroke}/></g>`
       );
+    }
     case "line": {
       const [x1, y1, x2, y2] = element.points;
       return (

@@ -20,8 +20,10 @@ import Konva from "konva";
 import type {
   CanvasElement,
   CanvasPan,
+  FillGradient,
   IconElement,
   ImageElement,
+  ShapeStroke,
   TextElement,
 } from "../../types/studio";
 import { getIconComponent } from "../../utils/icons";
@@ -34,6 +36,31 @@ import { buildSvg } from "../../utils/svg-export";
 import { DocumentSizeMenu } from "./DocumentSizeMenu";
 
 const MIN_SIZE = 5;
+
+const gradientProps = (
+  gradient: FillGradient | undefined,
+  width: number,
+  height: number,
+  centered: boolean,
+) => {
+  if (!gradient?.enabled) return {};
+  const radians = (gradient.angle * Math.PI) / 180;
+  const centerX = centered ? 0 : width / 2;
+  const centerY = centered ? 0 : height / 2;
+  const half = {
+    x: (Math.cos(radians) * width) / 2,
+    y: (Math.sin(radians) * height) / 2,
+  };
+  return {
+    fillPriority: "linear-gradient",
+    fillLinearGradientStartPoint: { x: centerX - half.x, y: centerY - half.y },
+    fillLinearGradientEndPoint: { x: centerX + half.x, y: centerY + half.y },
+    fillLinearGradientColorStops: [0, gradient.from, 1, gradient.to],
+  };
+};
+
+const strokeProps = (stroke: ShapeStroke | undefined) =>
+  stroke?.enabled ? { stroke: stroke.color, strokeWidth: stroke.width } : {};
 const RULER_SIZE = 22;
 const SAFE_AREA_INSET = 54;
 const SNAP_THRESHOLD = 6;
@@ -260,15 +287,26 @@ function ElementNode({
         height={element.height}
         fill={element.fill}
         cornerRadius={element.radius}
+        {...gradientProps(element.gradient, element.width, element.height, false)}
+        {...strokeProps(element.stroke)}
         shadowEnabled={element.shadow?.enabled ?? false}
         shadowColor={element.shadow?.color}
         shadowBlur={element.shadow?.blur}
         shadowOffsetX={element.shadow?.offsetX}
         shadowOffsetY={element.shadow?.offsetY}
+        shadowForStrokeEnabled={false}
       />
     );
   if (element.kind === "circle")
-    return <Circle {...shared} radius={element.radius} fill={element.fill} />;
+    return (
+      <Circle
+        {...shared}
+        radius={element.radius}
+        fill={element.fill}
+        {...gradientProps(element.gradient, element.radius * 2, element.radius * 2, true)}
+        {...strokeProps(element.stroke)}
+      />
+    );
   if (element.kind === "ellipse")
     return (
       <Ellipse
@@ -276,6 +314,8 @@ function ElementNode({
         radiusX={element.radiusX}
         radiusY={element.radiusY}
         fill={element.fill}
+        {...gradientProps(element.gradient, element.radiusX * 2, element.radiusY * 2, true)}
+        {...strokeProps(element.stroke)}
       />
     );
   if (element.kind === "polygon")
@@ -285,6 +325,8 @@ function ElementNode({
         sides={element.sides}
         radius={element.radius}
         fill={element.fill}
+        {...gradientProps(element.gradient, element.radius * 2, element.radius * 2, true)}
+        {...strokeProps(element.stroke)}
       />
     );
   if (element.kind === "star")
@@ -295,6 +337,13 @@ function ElementNode({
         innerRadius={element.innerRadius}
         outerRadius={element.outerRadius}
         fill={element.fill}
+        {...gradientProps(
+          element.gradient,
+          element.outerRadius * 2,
+          element.outerRadius * 2,
+          true,
+        )}
+        {...strokeProps(element.stroke)}
       />
     );
   if (element.kind === "arrow")
@@ -605,6 +654,90 @@ export function DesignCanvas() {
     };
     window.addEventListener("design-studio:export", exportCanvas);
     return () => window.removeEventListener("design-studio:export", exportCanvas);
+  }, []);
+
+  useEffect(() => {
+    const onAlign = (event: Event) => {
+      const mode = (event as CustomEvent<{ mode?: string }>).detail?.mode;
+      const stage = stageRef.current;
+      if (!mode || !stage) return;
+      const state = useStudioStore.getState();
+      const layer = stage.getLayers()[0];
+      const items = state.elements
+        .filter(
+          (element) =>
+            state.selectedIds.includes(element.id) &&
+            !element.locked &&
+            !element.hidden,
+        )
+        .flatMap((element) => {
+          const node = stage.findOne(`#${element.id}`);
+          return node
+            ? [
+                {
+                  element,
+                  rect: node.getClientRect({ relativeTo: layer, skipShadow: true }),
+                },
+              ]
+            : [];
+        });
+      if (!items.length) return;
+      const bounds =
+        items.length > 1
+          ? {
+              x: Math.min(...items.map((item) => item.rect.x)),
+              y: Math.min(...items.map((item) => item.rect.y)),
+              right: Math.max(...items.map((item) => item.rect.x + item.rect.width)),
+              bottom: Math.max(...items.map((item) => item.rect.y + item.rect.height)),
+            }
+          : { x: 0, y: 0, right: state.canvasSize.width, bottom: state.canvasSize.height };
+      const patches: { id: string; patch: { x?: number; y?: number } }[] = [];
+      if (mode === "distributeH" || mode === "distributeV") {
+        if (items.length < 3) return;
+        const horizontal = mode === "distributeH";
+        const sorted = [...items].sort((a, b) =>
+          horizontal ? a.rect.x - b.rect.x : a.rect.y - b.rect.y,
+        );
+        const total = horizontal ? bounds.right - bounds.x : bounds.bottom - bounds.y;
+        const occupied = sorted.reduce(
+          (sum, item) => sum + (horizontal ? item.rect.width : item.rect.height),
+          0,
+        );
+        const gap = (total - occupied) / (sorted.length - 1);
+        let cursor = horizontal ? bounds.x : bounds.y;
+        for (const item of sorted) {
+          const delta = cursor - (horizontal ? item.rect.x : item.rect.y);
+          patches.push({
+            id: item.element.id,
+            patch: horizontal
+              ? { x: item.element.x + delta }
+              : { y: item.element.y + delta },
+          });
+          cursor += (horizontal ? item.rect.width : item.rect.height) + gap;
+        }
+      } else {
+        for (const item of items) {
+          let dx = 0;
+          let dy = 0;
+          if (mode === "left") dx = bounds.x - item.rect.x;
+          else if (mode === "centerX")
+            dx = (bounds.x + bounds.right) / 2 - (item.rect.x + item.rect.width / 2);
+          else if (mode === "right") dx = bounds.right - (item.rect.x + item.rect.width);
+          else if (mode === "top") dy = bounds.y - item.rect.y;
+          else if (mode === "centerY")
+            dy = (bounds.y + bounds.bottom) / 2 - (item.rect.y + item.rect.height / 2);
+          else if (mode === "bottom")
+            dy = bounds.bottom - (item.rect.y + item.rect.height);
+          patches.push({
+            id: item.element.id,
+            patch: { x: item.element.x + dx, y: item.element.y + dy },
+          });
+        }
+      }
+      state.updateMany(patches);
+    };
+    window.addEventListener("design-studio:align", onAlign);
+    return () => window.removeEventListener("design-studio:align", onAlign);
   }, []);
 
   const onWheel = (event: KonvaEventObject<WheelEvent>) => {

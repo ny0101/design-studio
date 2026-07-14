@@ -135,6 +135,7 @@ interface StudioActions {
   group: () => void;
   ungroup: () => void;
   applyTemplate: (elements: CanvasElement[]) => void;
+  setBackground: (fill: string) => void;
   undo: () => void;
   redo: () => void;
 }
@@ -329,6 +330,45 @@ export const useStudioStore = create<StudioState & StudioActions>((set) => ({
             ? { ...item, groupId: undefined }
             : item,
         ),
+      };
+    }),
+  setBackground: (fill) =>
+    set((state) => {
+      const first = state.elements[0];
+      const { width, height } = state.canvasSize;
+      const isBackground =
+        first &&
+        first.kind === "rect" &&
+        first.x <= 0 &&
+        first.y <= 0 &&
+        first.x + first.width >= width &&
+        first.y + first.height >= height;
+      if (isBackground) {
+        return {
+          ...saveHistory(state),
+          elements: state.elements.map((item, index) =>
+            index === 0 ? ({ ...item, fill } as CanvasElement) : item,
+          ),
+        };
+      }
+      const backgroundElement: CanvasElement = {
+        id: crypto.randomUUID(),
+        name: "Background",
+        kind: "rect",
+        x: 0,
+        y: 0,
+        width,
+        height,
+        fill,
+        radius: 0,
+        rotation: 0,
+        opacity: 1,
+        hidden: false,
+        locked: true,
+      };
+      return {
+        ...saveHistory(state),
+        elements: [backgroundElement, ...state.elements],
       };
     }),
   applyTemplate: (elements) =>

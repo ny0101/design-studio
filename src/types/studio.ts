@@ -9,6 +9,7 @@ export type StudioTool =
   | "background"
   | "elements"
   | "template"
+  | "ai"
   | "upload";
 export type ElementKind =
   | "text"
@@ -43,6 +44,19 @@ export interface ElementShadow {
   offsetY: number;
 }
 
+export interface FillGradient {
+  enabled: boolean;
+  from: string;
+  to: string;
+  angle: number;
+}
+
+export interface ShapeStroke {
+  enabled: boolean;
+  color: string;
+  width: number;
+}
+
 export interface TextOutline {
   enabled: boolean;
   color: string;
@@ -73,12 +87,16 @@ export interface RectElement extends BaseElement {
   fill: string;
   radius: number;
   shadow?: ElementShadow;
+  gradient?: FillGradient;
+  stroke?: ShapeStroke;
 }
 
 export interface CircleElement extends BaseElement {
   kind: "circle";
   radius: number;
   fill: string;
+  gradient?: FillGradient;
+  stroke?: ShapeStroke;
 }
 
 export interface ImageCrop {
@@ -110,6 +128,8 @@ export interface EllipseElement extends BaseElement {
   radiusX: number;
   radiusY: number;
   fill: string;
+  gradient?: FillGradient;
+  stroke?: ShapeStroke;
 }
 
 export interface PolygonElement extends BaseElement {
@@ -117,6 +137,8 @@ export interface PolygonElement extends BaseElement {
   sides: number;
   radius: number;
   fill: string;
+  gradient?: FillGradient;
+  stroke?: ShapeStroke;
 }
 
 export interface StarElement extends BaseElement {
@@ -125,6 +147,8 @@ export interface StarElement extends BaseElement {
   innerRadius: number;
   outerRadius: number;
   fill: string;
+  gradient?: FillGradient;
+  stroke?: ShapeStroke;
 }
 
 export interface ArrowElement extends BaseElement {

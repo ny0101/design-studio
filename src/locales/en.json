@@ -45,7 +45,27 @@
     "background": "Background",
     "elements": "Elements",
     "template": "Template",
+    "ai": "AI",
     "upload": "Upload"
+  },
+  "ai": {
+    "title": "AI Assistant",
+    "imageSection": "Generate image",
+    "imagePlaceholder": "Describe the image you want…",
+    "generateImage": "Generate image",
+    "copySection": "Generate copy",
+    "copyPlaceholder": "Describe your design (product, event, mood)…",
+    "generateCopy": "Generate copy",
+    "generating": "Generating…",
+    "apiKeyPlaceholder": "Anthropic API key (sk-ant-…)",
+    "apiKeyHint": "Your key is stored only in this browser and sent directly to Anthropic.",
+    "imageError": "Image generation failed. Please try again.",
+    "errors": {
+      "auth": "Invalid API key. Check your Anthropic API key.",
+      "rateLimit": "Rate limited. Try again in a moment.",
+      "api": "The AI service returned an error. Try again.",
+      "network": "Network error. Check your connection."
+    }
   },
   "sidebar": {
     "workspace": "Design workspace"
@@ -143,9 +163,29 @@
     "icon": "Icon",
     "stroke": "Stroke",
     "strokeWidth": "Thickness",
+    "gradient": "Gradient",
+    "gradientFrom": "Start color",
+    "gradientTo": "End color",
+    "angle": "Angle",
+    "border": "Border",
+    "align": "Align",
     "sides": "Sides",
     "starPoints": "Points",
     "innerRadius": "Inner radius"
+  },
+  "align": {
+    "left": "Align left",
+    "centerX": "Align horizontal center",
+    "right": "Align right",
+    "top": "Align top",
+    "middle": "Align vertical center",
+    "bottom": "Align bottom",
+    "distributeH": "Distribute horizontally",
+    "distributeV": "Distribute vertically"
+  },
+  "background": {
+    "title": "Background",
+    "custom": "Custom color"
   },
   "templates": {
     "title": "Templates",

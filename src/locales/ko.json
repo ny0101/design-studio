@@ -45,7 +45,27 @@
     "background": "배경",
     "elements": "요소",
     "template": "템플릿",
+    "ai": "AI",
     "upload": "업로드"
+  },
+  "ai": {
+    "title": "AI 어시스턴트",
+    "imageSection": "이미지 생성",
+    "imagePlaceholder": "원하는 이미지를 설명해 주세요…",
+    "generateImage": "이미지 생성",
+    "copySection": "카피 생성",
+    "copyPlaceholder": "디자인을 설명해 주세요 (제품, 행사, 분위기)…",
+    "generateCopy": "카피 생성",
+    "generating": "생성 중…",
+    "apiKeyPlaceholder": "Anthropic API 키 (sk-ant-…)",
+    "apiKeyHint": "키는 이 브라우저에만 저장되며 Anthropic으로 직접 전송됩니다.",
+    "imageError": "이미지 생성에 실패했습니다. 다시 시도해 주세요.",
+    "errors": {
+      "auth": "API 키가 올바르지 않습니다. Anthropic API 키를 확인해 주세요.",
+      "rateLimit": "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.",
+      "api": "AI 서비스 오류가 발생했습니다. 다시 시도해 주세요.",
+      "network": "네트워크 오류입니다. 연결을 확인해 주세요."
+    }
   },
   "sidebar": {
     "workspace": "디자인 워크스페이스"
@@ -143,9 +163,29 @@
     "icon": "아이콘",
     "stroke": "선 색상",
     "strokeWidth": "두께",
+    "gradient": "그라디언트",
+    "gradientFrom": "시작 색상",
+    "gradientTo": "끝 색상",
+    "angle": "각도",
+    "border": "테두리",
+    "align": "정렬",
     "sides": "변의 수",
     "starPoints": "꼭짓점 수",
     "innerRadius": "내부 반경"
+  },
+  "align": {
+    "left": "왼쪽 정렬",
+    "centerX": "가로 중앙 정렬",
+    "right": "오른쪽 정렬",
+    "top": "위 정렬",
+    "middle": "세로 중앙 정렬",
+    "bottom": "아래 정렬",
+    "distributeH": "가로 간격 분배",
+    "distributeV": "세로 간격 분배"
+  },
+  "background": {
+    "title": "배경",
+    "custom": "사용자 색상"
   },
   "templates": {
     "title": "템플릿",
