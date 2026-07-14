@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Circle,
+  Group,
   Image as KonvaImage,
   Layer,
   Line,
@@ -11,12 +12,15 @@ import {
 } from "react-konva";
 import type { KonvaEventObject } from "konva/lib/Node";
 import type Konva from "konva";
-import type { CanvasElement, ImageElement } from "../../types/studio";
+import type { CanvasElement, CanvasPan, ImageElement } from "../../types/studio";
 import { useStudioStore } from "../../store/studio-store";
 import { useTranslation } from "../../hooks/useTranslation";
 
-const CANVAS_SIZE = 1080;
+export const CANVAS_SIZE = 1080;
 const MIN_SIZE = 5;
+const RULER_SIZE = 22;
+const SAFE_AREA_INSET = 54;
+const SNAP_THRESHOLD = 6;
 const id = () => crypto.randomUUID();
 
 function RasterImage({
@@ -89,6 +93,8 @@ function ElementNode({ element }: { element: CanvasElement }) {
     draggable: !element.locked,
     onClick: selectNode,
     onTap: selectNode,
+    onMouseDown: selectNode,
+    onTouchStart: selectNode,
     onDragStart: dragStart,
     onDragEnd: dragEnd,
     onTransformEnd: transformEnd,
@@ -161,15 +167,157 @@ function SelectionTransformer() {
   );
 }
 
+const pickRulerStep = (scale: number) => {
+  const steps = [5, 10, 25, 50, 100, 250, 500, 1000, 2500];
+  return steps.find((step) => step * scale >= 55) ?? 5000;
+};
+
+function Ruler({
+  orientation,
+  offset,
+  scale,
+  length,
+}: {
+  orientation: "horizontal" | "vertical";
+  offset: number;
+  scale: number;
+  length: number;
+}) {
+  const canvas = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const node = canvas.current;
+    if (!node || length <= 0) return;
+    const dpr = window.devicePixelRatio || 1;
+    const horizontal = orientation === "horizontal";
+    node.width = (horizontal ? length : RULER_SIZE) * dpr;
+    node.height = (horizontal ? RULER_SIZE : length) * dpr;
+    const ctx = node.getContext("2d");
+    if (!ctx) return;
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, length, RULER_SIZE);
+    ctx.font = "9px Inter, system-ui, sans-serif";
+    ctx.fillStyle = "#8a8f9c";
+    ctx.strokeStyle = "#464a56";
+    const step = pickRulerStep(scale);
+    const minor = step / 5;
+    const firstIndex = Math.floor(-offset / scale / minor);
+    const lastIndex = Math.ceil((length - offset) / scale / minor);
+    ctx.beginPath();
+    for (let index = firstIndex; index <= lastIndex; index += 1) {
+      const value = index * minor;
+      const screen = value * scale + offset;
+      const major = index % 5 === 0;
+      const tick = major ? RULER_SIZE - 12 : RULER_SIZE - 5;
+      if (horizontal) {
+        ctx.moveTo(screen + 0.5, tick);
+        ctx.lineTo(screen + 0.5, RULER_SIZE);
+      } else {
+        ctx.moveTo(tick, screen + 0.5);
+        ctx.lineTo(RULER_SIZE, screen + 0.5);
+      }
+      if (major) {
+        if (horizontal) {
+          ctx.fillText(String(Math.round(value)), screen + 3, 9);
+        } else {
+          ctx.save();
+          ctx.translate(9, screen + 3);
+          ctx.rotate(-Math.PI / 2);
+          ctx.textAlign = "right";
+          ctx.fillText(String(Math.round(value)), 0, 0);
+          ctx.restore();
+        }
+      }
+    }
+    ctx.stroke();
+  }, [orientation, offset, scale, length]);
+  return <canvas ref={canvas} className={`ruler ruler-${orientation}`} />;
+}
+
+interface SnapTargets {
+  vertical: number[];
+  horizontal: number[];
+}
+
 export function DesignCanvas() {
-  const stage = useRef<import("konva/lib/Stage").Stage>(null);
-  const { elements, select, zoom, showGrid, showGuides, add, setTool } = useStudioStore();
+  const stageRef = useRef<Konva.Stage>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<Konva.Layer>(null);
+  const snapV = useRef<Konva.Line>(null);
+  const snapH = useRef<Konva.Line>(null);
+  const snapTargets = useRef<SnapTargets>({ vertical: [], horizontal: [] });
+  const [viewport, setViewport] = useState({ width: 0, height: 0 });
+  const [panning, setPanning] = useState(false);
+  const {
+    elements,
+    select,
+    zoom,
+    setZoom,
+    pan,
+    setPan,
+    showGrid,
+    showGuides,
+    showRulers,
+    showSafeArea,
+    add,
+    setTool,
+  } = useStudioStore();
   const { t } = useTranslation();
-  const scale = (zoom / 100) * 0.62;
+  const scale = zoom / 100;
+  const centeredPan: CanvasPan = {
+    x: (viewport.width - CANVAS_SIZE * scale) / 2,
+    y: (viewport.height - CANVAS_SIZE * scale) / 2,
+  };
+  const effectivePan = pan ?? centeredPan;
+
+  useEffect(() => {
+    const node = viewportRef.current;
+    if (!node) return;
+    const observer = new ResizeObserver(() =>
+      setViewport({ width: node.clientWidth, height: node.clientHeight }),
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.code !== "Space" || event.repeat) return;
+      const target = event.target as HTMLElement;
+      if (
+        target.isContentEditable ||
+        ["INPUT", "TEXTAREA", "SELECT", "BUTTON"].includes(target.tagName)
+      )
+        return;
+      event.preventDefault();
+      setPanning(true);
+    };
+    const onKeyUp = (event: KeyboardEvent) => {
+      if (event.code === "Space") setPanning(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+    };
+  }, []);
+
   useEffect(() => {
     const exportCanvas = () => {
-      const uri = stage.current?.toDataURL({ pixelRatio: 2 });
-      if (!uri) return;
+      const stage = stageRef.current;
+      const overlay = overlayRef.current;
+      if (!stage) return;
+      overlay?.visible(false);
+      const currentScale = useStudioStore.getState().zoom / 100;
+      const position = stage.position();
+      const uri = stage.toDataURL({
+        x: position.x,
+        y: position.y,
+        width: CANVAS_SIZE * currentScale,
+        height: CANVAS_SIZE * currentScale,
+        pixelRatio: 2 / currentScale,
+      });
+      overlay?.visible(true);
       const link = document.createElement("a");
       link.download = "design-studio.png";
       link.href = uri;
@@ -178,16 +326,120 @@ export function DesignCanvas() {
     window.addEventListener("design-studio:export", exportCanvas);
     return () => window.removeEventListener("design-studio:export", exportCanvas);
   }, []);
-  const addText = () => {
-    const element = {
+
+  const onWheel = (event: KonvaEventObject<WheelEvent>) => {
+    event.evt.preventDefault();
+    const stage = stageRef.current;
+    if (!stage) return;
+    if (event.evt.ctrlKey || event.evt.metaKey) {
+      const pointer = stage.getPointerPosition();
+      if (!pointer) return;
+      const oldScale = scale;
+      const factor = event.evt.deltaY > 0 ? 0.92 : 1.08;
+      const nextZoom = Math.min(400, Math.max(10, Math.round(zoom * factor)));
+      const nextScale = nextZoom / 100;
+      if (nextZoom === zoom) return;
+      const anchor = {
+        x: (pointer.x - effectivePan.x) / oldScale,
+        y: (pointer.y - effectivePan.y) / oldScale,
+      };
+      setPan({
+        x: pointer.x - anchor.x * nextScale,
+        y: pointer.y - anchor.y * nextScale,
+      });
+      setZoom(nextZoom);
+    } else {
+      setPan({
+        x: effectivePan.x - event.evt.deltaX,
+        y: effectivePan.y - event.evt.deltaY,
+      });
+    }
+  };
+
+  const collectSnapTargets = useCallback(
+    (dragged: Konva.Node) => {
+      const layer = dragged.getLayer();
+      const vertical = [0, CANVAS_SIZE / 2, CANVAS_SIZE];
+      const horizontal = [0, CANVAS_SIZE / 2, CANVAS_SIZE];
+      const state = useStudioStore.getState();
+      for (const element of state.elements) {
+        if (element.id === dragged.id() || element.hidden) continue;
+        const node = layer?.findOne(`#${element.id}`);
+        if (!node) continue;
+        const box = node.getClientRect({ relativeTo: layer ?? undefined });
+        vertical.push(box.x, box.x + box.width / 2, box.x + box.width);
+        horizontal.push(box.y, box.y + box.height / 2, box.y + box.height);
+      }
+      snapTargets.current = { vertical, horizontal };
+    },
+    [],
+  );
+
+  const hideSnapLines = () => {
+    snapV.current?.visible(false);
+    snapH.current?.visible(false);
+    overlayRef.current?.batchDraw();
+  };
+
+  const onLayerDragStart = (event: KonvaEventObject<DragEvent>) => {
+    collectSnapTargets(event.target);
+  };
+
+  const onLayerDragMove = (event: KonvaEventObject<DragEvent>) => {
+    const node = event.target;
+    const layer = node.getLayer();
+    if (!layer) return;
+    const threshold = SNAP_THRESHOLD / scale;
+    const box = node.getClientRect({ relativeTo: layer });
+    const ownV = [box.x, box.x + box.width / 2, box.x + box.width];
+    const ownH = [box.y, box.y + box.height / 2, box.y + box.height];
+    let bestV: { delta: number; line: number } | null = null;
+    let bestH: { delta: number; line: number } | null = null;
+    for (const own of ownV) {
+      for (const target of snapTargets.current.vertical) {
+        const delta = target - own;
+        if (Math.abs(delta) <= threshold && (!bestV || Math.abs(delta) < Math.abs(bestV.delta)))
+          bestV = { delta, line: target };
+      }
+    }
+    for (const own of ownH) {
+      for (const target of snapTargets.current.horizontal) {
+        const delta = target - own;
+        if (Math.abs(delta) <= threshold && (!bestH || Math.abs(delta) < Math.abs(bestH.delta)))
+          bestH = { delta, line: target };
+      }
+    }
+    if (bestV) node.x(node.x() + bestV.delta);
+    if (bestH) node.y(node.y() + bestH.delta);
+    const range = 100000;
+    if (snapV.current) {
+      snapV.current.visible(Boolean(bestV));
+      if (bestV) snapV.current.points([bestV.line, -range, bestV.line, range]);
+    }
+    if (snapH.current) {
+      snapH.current.visible(Boolean(bestH));
+      if (bestH) snapH.current.points([-range, bestH.line, range, bestH.line]);
+    }
+    overlayRef.current?.batchDraw();
+  };
+
+  const onStageDragEnd = (event: KonvaEventObject<DragEvent>) => {
+    const stage = stageRef.current;
+    if (stage && event.target === stage) {
+      setPan({ x: stage.x(), y: stage.y() });
+    }
+  };
+
+  const addText = (position: CanvasPan) => {
+    add({
       id: id(),
       name: t("defaults.newText"),
-      kind: "text" as const,
-      x: 160,
-      y: 180,
+      kind: "text",
+      x: position.x,
+      y: position.y,
       text: t("defaults.newTextContent"),
       fontSize: 68,
-      fontStyle: "bold" as const,
+      fontStyle: "bold",
       fill: "#16181D",
       width: 660,
       lineHeight: 1.1,
@@ -195,17 +447,16 @@ export function DesignCanvas() {
       opacity: 1,
       hidden: false,
       locked: false,
-    };
-    add(element);
+    });
     setTool("select");
   };
-  const addShape = () => {
-    const element = {
+  const addShape = (position: CanvasPan) => {
+    add({
       id: id(),
       name: t("defaults.rectangle"),
-      kind: "rect" as const,
-      x: 320,
-      y: 530,
+      kind: "rect",
+      x: position.x,
+      y: position.y,
       width: 260,
       height: 160,
       fill: "#6C7CFF",
@@ -214,84 +465,167 @@ export function DesignCanvas() {
       opacity: 1,
       hidden: false,
       locked: false,
-    };
-    add(element);
+    });
     setTool("select");
   };
+
   const onStageClick = (event: KonvaEventObject<MouseEvent>) => {
-    if (event.target === event.target.getStage()) {
-      const tool = useStudioStore.getState().activeTool;
-      if (tool === "text") addText();
-      else if (tool === "shape") addShape();
-      else select(null);
+    if (panning) return;
+    const stage = stageRef.current;
+    const tool = useStudioStore.getState().activeTool;
+    if ((tool === "text" || tool === "shape") && stage) {
+      const pointer = stage.getPointerPosition();
+      if (!pointer) return;
+      const position = {
+        x: (pointer.x - effectivePan.x) / scale,
+        y: (pointer.y - effectivePan.y) / scale,
+      };
+      if (tool === "text") addText(position);
+      else addShape(position);
+      return;
     }
+    if (event.target === event.target.getStage()) select(null);
   };
+
+  const gridLines = Math.floor(CANVAS_SIZE / 40) + 1;
+
   return (
     <section className="native-canvas" aria-label={t("canvas.label")}>
-      <div className="canvas-meta">
-        <span>1080 × 1080 px</span>
-        <span>{zoom}%</span>
-      </div>
-      <div className="canvas-scroll">
-        <div
-          className="stage-shell"
-          style={{
-            width: `${CANVAS_SIZE * scale}px`,
-            height: `${CANVAS_SIZE * scale}px`,
-          }}
-        >
+      <div
+        ref={viewportRef}
+        className="canvas-viewport"
+        style={{ cursor: panning ? "grab" : undefined }}
+      >
+        {viewport.width > 0 && (
           <Stage
-            ref={stage}
-            width={CANVAS_SIZE}
-            height={CANVAS_SIZE}
+            ref={stageRef}
+            width={viewport.width}
+            height={viewport.height}
+            x={effectivePan.x}
+            y={effectivePan.y}
             scaleX={scale}
             scaleY={scale}
+            draggable={panning}
+            onWheel={onWheel}
             onClick={onStageClick}
             onTap={onStageClick}
+            onDragEnd={onStageDragEnd}
           >
-            <Layer>
-              {showGrid &&
-                Array.from({ length: 28 }, (_, index) => (
-                  <Line
-                    key={`v${index}`}
-                    points={[index * 40, 0, index * 40, CANVAS_SIZE]}
-                    stroke="#16181D"
-                    opacity={0.07}
-                    strokeWidth={1}
-                  />
-                ))}
-              {showGrid &&
-                Array.from({ length: 28 }, (_, index) => (
-                  <Line
-                    key={`h${index}`}
-                    points={[0, index * 40, CANVAS_SIZE, index * 40]}
-                    stroke="#16181D"
-                    opacity={0.07}
-                    strokeWidth={1}
-                  />
-                ))}
+            <Layer
+              listening={!panning}
+              onDragStart={onLayerDragStart}
+              onDragMove={onLayerDragMove}
+              onDragEnd={hideSnapLines}
+            >
+              <Rect
+                x={0}
+                y={0}
+                width={CANVAS_SIZE}
+                height={CANVAS_SIZE}
+                fill="#FFFFFF"
+                listening={false}
+                shadowColor="rgba(0, 0, 0, 0.4)"
+                shadowBlur={40}
+                shadowOffsetY={14}
+              />
               {elements.map((element) => (
                 <ElementNode key={element.id} element={element} />
               ))}
-              {showGuides && (
-                <>
-                  <Line
-                    points={[540, 0, 540, CANVAS_SIZE]}
-                    stroke="#6C7CFF"
-                    dash={[10, 8]}
-                    opacity={0.55}
-                  />
-                  <Line
-                    points={[0, 540, CANVAS_SIZE, 540]}
-                    stroke="#6C7CFF"
-                    dash={[10, 8]}
-                    opacity={0.55}
-                  />
-                </>
+            </Layer>
+            <Layer ref={overlayRef} listening={!panning}>
+              {showGrid && (
+                <Group listening={false}>
+                  {Array.from({ length: gridLines }, (_, index) => (
+                    <Line
+                      key={`v${index}`}
+                      points={[index * 40, 0, index * 40, CANVAS_SIZE]}
+                      stroke="#16181D"
+                      opacity={0.07}
+                      strokeWidth={1 / scale}
+                    />
+                  ))}
+                  {Array.from({ length: gridLines }, (_, index) => (
+                    <Line
+                      key={`h${index}`}
+                      points={[0, index * 40, CANVAS_SIZE, index * 40]}
+                      stroke="#16181D"
+                      opacity={0.07}
+                      strokeWidth={1 / scale}
+                    />
+                  ))}
+                </Group>
               )}
+              {showGuides && (
+                <Group listening={false}>
+                  <Line
+                    points={[CANVAS_SIZE / 2, 0, CANVAS_SIZE / 2, CANVAS_SIZE]}
+                    stroke="#6C7CFF"
+                    dash={[10, 8]}
+                    opacity={0.55}
+                    strokeWidth={1 / scale}
+                  />
+                  <Line
+                    points={[0, CANVAS_SIZE / 2, CANVAS_SIZE, CANVAS_SIZE / 2]}
+                    stroke="#6C7CFF"
+                    dash={[10, 8]}
+                    opacity={0.55}
+                    strokeWidth={1 / scale}
+                  />
+                </Group>
+              )}
+              {showSafeArea && (
+                <Rect
+                  x={SAFE_AREA_INSET}
+                  y={SAFE_AREA_INSET}
+                  width={CANVAS_SIZE - SAFE_AREA_INSET * 2}
+                  height={CANVAS_SIZE - SAFE_AREA_INSET * 2}
+                  stroke="#F97066"
+                  dash={[12, 8]}
+                  opacity={0.7}
+                  strokeWidth={1.5 / scale}
+                  listening={false}
+                />
+              )}
+              <Line
+                ref={snapV}
+                visible={false}
+                stroke="#F0428C"
+                strokeWidth={1 / scale}
+                listening={false}
+              />
+              <Line
+                ref={snapH}
+                visible={false}
+                stroke="#F0428C"
+                strokeWidth={1 / scale}
+                listening={false}
+              />
               <SelectionTransformer />
             </Layer>
           </Stage>
+        )}
+        {showRulers && viewport.width > 0 && (
+          <>
+            <div className="ruler-corner" />
+            <Ruler
+              orientation="horizontal"
+              offset={effectivePan.x}
+              scale={scale}
+              length={viewport.width}
+            />
+            <Ruler
+              orientation="vertical"
+              offset={effectivePan.y}
+              scale={scale}
+              length={viewport.height}
+            />
+          </>
+        )}
+        <div className="canvas-meta">
+          <span>
+            {CANVAS_SIZE} × {CANVAS_SIZE} px
+          </span>
+          <span>{zoom}%</span>
         </div>
       </div>
     </section>

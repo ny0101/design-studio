@@ -214,43 +214,63 @@ button:disabled {
   background-size: 14px 14px;
 }
 .native-canvas {
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
   height: 100%;
   min-height: 680px;
 }
+.canvas-viewport {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
 .canvas-meta {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   justify-content: space-between;
   width: fit-content;
-  margin: 0 auto 12px;
   padding: 6px 10px;
   border: 1px solid #373a43;
   border-radius: 7px;
   color: #aeb3c0;
   background: #26282f;
   font-size: 10px;
+  pointer-events: none;
 }
 .canvas-meta span + span {
   margin-left: 14px;
   color: #dfe3eb;
 }
-.canvas-scroll {
-  display: grid;
-  place-items: center;
-  min-height: 0;
-  overflow: auto;
-  padding: 25px;
+.ruler {
+  position: absolute;
+  z-index: 2;
+  background: rgba(38, 40, 47, 0.92);
+  pointer-events: none;
 }
-.stage-shell {
-  flex: none;
-  overflow: hidden;
-  border: 1px solid #dad7d0;
-  box-shadow: 0 22px 52px rgba(0, 0, 0, 0.35);
-  background: #f5f3ee;
+.ruler-horizontal {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 22px;
 }
-.stage-shell canvas {
-  display: block;
+.ruler-vertical {
+  top: 0;
+  left: 0;
+  width: 22px;
+  height: 100%;
+}
+.ruler-corner {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  left: 0;
+  width: 22px;
+  height: 22px;
+  border-right: 1px solid #464a56;
+  border-bottom: 1px solid #464a56;
+  background: #26282f;
+  pointer-events: none;
 }
 .layers-panel {
   padding: 16px 10px;
@@ -553,9 +573,6 @@ footer span:first-of-type {
   }
   .native-canvas {
     min-height: 560px;
-  }
-  .canvas-scroll {
-    padding: 10px;
   }
 }
 @media (max-width: 600px) {

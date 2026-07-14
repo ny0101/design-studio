@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type {
   CanvasElement,
+  CanvasPan,
   ColorTheme,
   Language,
   StudioState,
@@ -86,8 +87,11 @@ interface StudioActions {
   setLanguage: (language: Language) => void;
   setTool: (tool: StudioTool) => void;
   setZoom: (zoom: number) => void;
+  setPan: (pan: CanvasPan) => void;
   toggleGrid: () => void;
   toggleGuides: () => void;
+  toggleRulers: () => void;
+  toggleSafeArea: () => void;
   select: (id: string | null) => void;
   add: (element: CanvasElement, options?: { select?: boolean }) => void;
   update: (id: string, patch: Partial<CanvasElement>) => void;
@@ -115,8 +119,11 @@ export const useStudioStore = create<StudioState & StudioActions>((set) => ({
   language: detectLanguage(),
   activeTool: "select",
   zoom: 62,
+  pan: null,
   showGrid: false,
   showGuides: true,
+  showRulers: false,
+  showSafeArea: false,
   elements: initialElements,
   selectedId: "heading",
   clipboard: [],
@@ -129,9 +136,12 @@ export const useStudioStore = create<StudioState & StudioActions>((set) => ({
     set({ language });
   },
   setTool: (activeTool) => set({ activeTool }),
-  setZoom: (zoom) => set({ zoom: Math.min(200, Math.max(25, zoom)) }),
+  setZoom: (zoom) => set({ zoom: Math.min(400, Math.max(10, Math.round(zoom))) }),
+  setPan: (pan) => set({ pan }),
   toggleGrid: () => set((state) => ({ showGrid: !state.showGrid })),
   toggleGuides: () => set((state) => ({ showGuides: !state.showGuides })),
+  toggleRulers: () => set((state) => ({ showRulers: !state.showRulers })),
+  toggleSafeArea: () => set((state) => ({ showSafeArea: !state.showSafeArea })),
   select: (selectedId) => set({ selectedId }),
   add: (element, options) =>
     set((state) => ({

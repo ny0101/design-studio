@@ -10,6 +10,8 @@
     "zoomOut": "축소",
     "toggleGrid": "격자 표시",
     "toggleGuides": "가이드 표시",
+    "toggleRulers": "눈금자 표시",
+    "toggleSafeArea": "안전 영역 표시",
     "legacyEditor": "기존 편집기",
     "preview": "미리보기",
     "export": "내보내기",

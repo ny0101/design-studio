@@ -59,14 +59,22 @@ export interface ImageElement extends BaseElement {
 
 export type CanvasElement = TextElement | RectElement | CircleElement | ImageElement;
 
+export interface CanvasPan {
+  x: number;
+  y: number;
+}
+
 export interface StudioState {
   view: WorkspaceView;
   theme: ColorTheme;
   language: Language;
   activeTool: StudioTool;
   zoom: number;
+  pan: CanvasPan | null;
   showGrid: boolean;
   showGuides: boolean;
+  showRulers: boolean;
+  showSafeArea: boolean;
   elements: CanvasElement[];
   selectedId: string | null;
   clipboard: CanvasElement[];

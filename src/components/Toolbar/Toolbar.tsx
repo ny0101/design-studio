@@ -9,7 +9,9 @@ import {
   MousePointer2,
   Plus,
   Redo2,
+  Ruler,
   Settings,
+  SquareDashed,
   Undo2,
 } from "lucide-react";
 import { APP_INFO } from "../../config/app";
@@ -26,8 +28,12 @@ export function Toolbar() {
     future,
     toggleGrid,
     toggleGuides,
+    toggleRulers,
+    toggleSafeArea,
     showGrid,
     showGuides,
+    showRulers,
+    showSafeArea,
   } = useStudioStore();
   const { t, language, setLanguage } = useTranslation();
   const download = () => window.dispatchEvent(new Event("design-studio:export"));
@@ -91,6 +97,20 @@ export function Toolbar() {
           title={t("toolbar.toggleGuides")}
         >
           <MousePointer2 size={17} />
+        </button>
+        <button
+          className={showRulers ? "toolbar-icon selected" : "toolbar-icon"}
+          onClick={toggleRulers}
+          title={t("toolbar.toggleRulers")}
+        >
+          <Ruler size={17} />
+        </button>
+        <button
+          className={showSafeArea ? "toolbar-icon selected" : "toolbar-icon"}
+          onClick={toggleSafeArea}
+          title={t("toolbar.toggleSafeArea")}
+        >
+          <SquareDashed size={17} />
         </button>
         <button
           className="toolbar-button"

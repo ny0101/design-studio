@@ -10,6 +10,8 @@
     "zoomOut": "Zoom out",
     "toggleGrid": "Toggle grid",
     "toggleGuides": "Toggle guides",
+    "toggleRulers": "Toggle rulers",
+    "toggleSafeArea": "Toggle safe area",
     "legacyEditor": "Legacy editor",
     "preview": "Preview",
     "export": "Export",
