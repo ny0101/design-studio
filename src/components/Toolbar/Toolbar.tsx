@@ -14,9 +14,49 @@ import {
   SquareDashed,
   Undo2,
 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { APP_INFO } from "../../config/app";
 import { useStudioStore } from "../../store/studio-store";
 import { useTranslation } from "../../hooks/useTranslation";
+
+const EXPORT_FORMATS = ["png", "png-transparent", "jpg", "svg", "pdf"] as const;
+
+function ExportMenu() {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const menu = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (!menu.current?.contains(event.target as Node)) setOpen(false);
+    };
+    window.addEventListener("pointerdown", onPointerDown);
+    return () => window.removeEventListener("pointerdown", onPointerDown);
+  }, [open]);
+  const exportAs = (format: string) => {
+    setOpen(false);
+    window.dispatchEvent(
+      new CustomEvent("design-studio:export", { detail: { format } }),
+    );
+  };
+  return (
+    <div className="export-menu" ref={menu}>
+      <button className="toolbar-button primary" onClick={() => setOpen(!open)}>
+        <Download size={16} />
+        {t("toolbar.export")}
+      </button>
+      {open && (
+        <div className="export-dropdown">
+          {EXPORT_FORMATS.map((format) => (
+            <button key={format} onClick={() => exportAs(format)}>
+              {t(`export.${format}`)}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function Toolbar() {
   const {
@@ -36,7 +76,6 @@ export function Toolbar() {
     showSafeArea,
   } = useStudioStore();
   const { t, language, setLanguage } = useTranslation();
-  const download = () => window.dispatchEvent(new Event("design-studio:export"));
   return (
     <header className="toolbar">
       <div className="toolbar-start">
@@ -125,10 +164,7 @@ export function Toolbar() {
           <Eye size={16} />
           {t("toolbar.preview")}
         </button>
-        <button className="toolbar-button primary" onClick={download}>
-          <Download size={16} />
-          {t("toolbar.export")}
-        </button>
+        <ExportMenu />
         <button className="toolbar-icon" title={t("toolbar.settings")}>
           <Settings size={17} />
         </button>

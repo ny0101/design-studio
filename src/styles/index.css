@@ -336,6 +336,35 @@ button:disabled {
   margin-left: 14px;
   color: #dfe3eb;
 }
+.export-menu {
+  position: relative;
+}
+.export-dropdown {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  right: 0;
+  display: grid;
+  min-width: 172px;
+  padding: 5px;
+  border: 1px solid #373a43;
+  border-radius: 9px;
+  background: #26282f;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.4);
+}
+.export-dropdown button {
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 6px;
+  color: #dfe3eb;
+  background: transparent;
+  font-size: 11px;
+  text-align: left;
+}
+.export-dropdown button:hover {
+  color: #fff;
+  background: #363944;
+}
 .align-buttons {
   display: flex;
   gap: 4px;

@@ -128,6 +128,13 @@
     "starPoints": "꼭짓점 수",
     "innerRadius": "내부 반경"
   },
+  "export": {
+    "png": "PNG",
+    "png-transparent": "PNG (투명 배경)",
+    "jpg": "JPG",
+    "svg": "SVG",
+    "pdf": "PDF"
+  },
   "weights": {
     "light": "가늘게",
     "regular": "보통",

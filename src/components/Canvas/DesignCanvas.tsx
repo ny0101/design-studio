@@ -30,6 +30,7 @@ import { useTranslation } from "../../hooks/useTranslation";
 import { createShapeElement } from "../../utils/shapes";
 import { DEFAULT_FONT } from "../../utils/fonts";
 import { createImageElement } from "../../utils/images";
+import { buildSvg } from "../../utils/svg-export";
 
 export const CANVAS_SIZE = 1080;
 const MIN_SIZE = 5;
@@ -442,6 +443,7 @@ export function DesignCanvas() {
   const stageRef = useRef<Konva.Stage>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<Konva.Layer>(null);
+  const artboardRef = useRef<Konva.Rect>(null);
   const snapV = useRef<Konva.Line>(null);
   const snapH = useRef<Konva.Line>(null);
   const snapTargets = useRef<SnapTargets>({ vertical: [], horizontal: [] });
@@ -508,12 +510,47 @@ export function DesignCanvas() {
   }, []);
 
   useEffect(() => {
-    const exportCanvas = () => {
+    const download = (href: string, filename: string) => {
+      const link = document.createElement("a");
+      link.download = filename;
+      link.href = href;
+      link.click();
+    };
+    const exportCanvas = async (event: Event) => {
+      const format =
+        (event as CustomEvent<{ format?: string }>).detail?.format ?? "png";
+      const state = useStudioStore.getState();
+      if (format === "svg") {
+        const svg = buildSvg(state.elements, CANVAS_SIZE);
+        const blob = new Blob([svg], { type: "image/svg+xml" });
+        const url = URL.createObjectURL(blob);
+        download(url, "design-studio.svg");
+        URL.revokeObjectURL(url);
+        return;
+      }
       const stage = stageRef.current;
       const overlay = overlayRef.current;
       if (!stage) return;
       overlay?.visible(false);
-      const currentScale = useStudioStore.getState().zoom / 100;
+      const hiddenNodes: Konva.Node[] = [];
+      if (format === "png-transparent") {
+        if (artboardRef.current) hiddenNodes.push(artboardRef.current);
+        const bottom = state.elements[0];
+        if (
+          bottom &&
+          bottom.kind === "rect" &&
+          !bottom.hidden &&
+          bottom.x <= 0 &&
+          bottom.y <= 0 &&
+          bottom.x + bottom.width >= CANVAS_SIZE &&
+          bottom.y + bottom.height >= CANVAS_SIZE
+        ) {
+          const node = stage.findOne(`#${bottom.id}`);
+          if (node) hiddenNodes.push(node);
+        }
+      }
+      hiddenNodes.forEach((node) => node.visible(false));
+      const currentScale = state.zoom / 100;
       const position = stage.position();
       const uri = stage.toDataURL({
         x: position.x,
@@ -521,12 +558,24 @@ export function DesignCanvas() {
         width: CANVAS_SIZE * currentScale,
         height: CANVAS_SIZE * currentScale,
         pixelRatio: 2 / currentScale,
+        mimeType: format === "jpg" ? "image/jpeg" : "image/png",
+        quality: 0.92,
       });
+      hiddenNodes.forEach((node) => node.visible(true));
       overlay?.visible(true);
-      const link = document.createElement("a");
-      link.download = "design-studio.png";
-      link.href = uri;
-      link.click();
+      if (format === "pdf") {
+        const { jsPDF } = await import("jspdf");
+        const doc = new jsPDF({
+          orientation: "portrait",
+          unit: "px",
+          format: [CANVAS_SIZE, CANVAS_SIZE],
+        });
+        doc.addImage(uri, "PNG", 0, 0, CANVAS_SIZE, CANVAS_SIZE);
+        doc.save("design-studio.pdf");
+        return;
+      }
+      const extension = format === "jpg" ? "jpg" : "png";
+      download(uri, `design-studio.${extension}`);
     };
     window.addEventListener("design-studio:export", exportCanvas);
     return () => window.removeEventListener("design-studio:export", exportCanvas);
@@ -790,6 +839,7 @@ export function DesignCanvas() {
               onDragEnd={onLayerDragEnd}
             >
               <Rect
+                ref={artboardRef}
                 x={0}
                 y={0}
                 width={CANVAS_SIZE}
