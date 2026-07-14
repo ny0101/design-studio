@@ -1,7 +1,15 @@
 import {
   AlignCenter,
+  AlignCenterHorizontal,
+  AlignCenterVertical,
+  AlignEndHorizontal,
+  AlignEndVertical,
+  AlignHorizontalSpaceBetween,
   AlignLeft,
   AlignRight,
+  AlignStartHorizontal,
+  AlignStartVertical,
+  AlignVerticalSpaceBetween,
   FlipHorizontal2,
   FlipVertical2,
   ImagePlus,
@@ -10,7 +18,9 @@ import {
 import type {
   CanvasElement,
   ElementShadow,
+  FillGradient,
   ImageElement,
+  ShapeStroke,
   TextAlign,
   TextElement,
 } from "../../types/studio";
@@ -54,6 +64,164 @@ const DEFAULT_SHADOW: ElementShadow = {
   offsetX: 0,
   offsetY: 6,
 };
+
+const DEFAULT_GRADIENT: FillGradient = {
+  enabled: false,
+  from: "#6C7CFF",
+  to: "#B4FF55",
+  angle: 90,
+};
+
+const DEFAULT_STROKE: ShapeStroke = { enabled: false, color: "#16181D", width: 4 };
+
+function FillControls({
+  fill,
+  gradient,
+  onChange,
+}: {
+  fill: string;
+  gradient?: FillGradient;
+  onChange: (patch: { fill?: string; gradient?: FillGradient }) => void;
+}) {
+  const { t } = useTranslation();
+  const current = gradient ?? DEFAULT_GRADIENT;
+  return (
+    <>
+      <label className="property-field color">
+        <span>{t("properties.fill")}</span>
+        <input
+          type="color"
+          value={fill}
+          onChange={(event) => onChange({ fill: event.target.value })}
+        />
+      </label>
+      <label className="property-toggle">
+        <input
+          type="checkbox"
+          checked={current.enabled}
+          onChange={(event) =>
+            onChange({
+              gradient: {
+                ...current,
+                enabled: event.target.checked,
+                from: current.enabled ? current.from : fill,
+              },
+            })
+          }
+        />
+        <span>{t("properties.gradient")}</span>
+      </label>
+      {current.enabled && (
+        <>
+          <label className="property-field color">
+            <span>{t("properties.gradientFrom")}</span>
+            <input
+              type="color"
+              value={current.from}
+              onChange={(event) =>
+                onChange({ gradient: { ...current, from: event.target.value } })
+              }
+            />
+          </label>
+          <label className="property-field color">
+            <span>{t("properties.gradientTo")}</span>
+            <input
+              type="color"
+              value={current.to}
+              onChange={(event) =>
+                onChange({ gradient: { ...current, to: event.target.value } })
+              }
+            />
+          </label>
+          <NumberField
+            label={t("properties.angle")}
+            value={current.angle}
+            min={0}
+            max={360}
+            onChange={(value) => onChange({ gradient: { ...current, angle: value } })}
+          />
+        </>
+      )}
+    </>
+  );
+}
+
+function StrokeControls({
+  stroke,
+  onChange,
+}: {
+  stroke?: ShapeStroke;
+  onChange: (stroke: ShapeStroke) => void;
+}) {
+  const { t } = useTranslation();
+  const current = stroke ?? DEFAULT_STROKE;
+  return (
+    <>
+      <label className="property-toggle">
+        <input
+          type="checkbox"
+          checked={current.enabled}
+          onChange={(event) => onChange({ ...current, enabled: event.target.checked })}
+        />
+        <span>{t("properties.border")}</span>
+      </label>
+      {current.enabled && (
+        <>
+          <label className="property-field color">
+            <span>{t("properties.stroke")}</span>
+            <input
+              type="color"
+              value={current.color}
+              onChange={(event) => onChange({ ...current, color: event.target.value })}
+            />
+          </label>
+          <NumberField
+            label={t("properties.strokeWidth")}
+            value={current.width}
+            min={1}
+            max={40}
+            onChange={(value) => onChange({ ...current, width: value })}
+          />
+        </>
+      )}
+    </>
+  );
+}
+
+const ALIGN_MODES: { mode: string; icon: typeof AlignStartVertical; key: string }[] = [
+  { mode: "left", icon: AlignStartVertical, key: "left" },
+  { mode: "centerX", icon: AlignCenterVertical, key: "centerX" },
+  { mode: "right", icon: AlignEndVertical, key: "right" },
+  { mode: "top", icon: AlignStartHorizontal, key: "top" },
+  { mode: "centerY", icon: AlignCenterHorizontal, key: "middle" },
+  { mode: "bottom", icon: AlignEndHorizontal, key: "bottom" },
+  { mode: "distributeH", icon: AlignHorizontalSpaceBetween, key: "distributeH" },
+  { mode: "distributeV", icon: AlignVerticalSpaceBetween, key: "distributeV" },
+];
+
+function AlignmentControls() {
+  const { t } = useTranslation();
+  return (
+    <section>
+      <h3>{t("properties.align")}</h3>
+      <div className="align-buttons wrap">
+        {ALIGN_MODES.map(({ mode, icon: Icon, key }) => (
+          <button
+            key={mode}
+            title={t(`align.${key}`)}
+            onClick={() =>
+              window.dispatchEvent(
+                new CustomEvent("design-studio:align", { detail: { mode } }),
+              )
+            }
+          >
+            <Icon size={15} />
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 function ShadowControls({
   shadow,
@@ -428,10 +596,13 @@ export function PropertiesPanel() {
       </div>
       {!selected && multiCount <= 1 && <EmptyProperties />}
       {!selected && multiCount > 1 && (
-        <div className="empty-properties">
-          <SlidersHorizontal size={24} />
-          <b>{t("properties.multiSelected", { count: multiCount })}</b>
-          <p>{t("properties.multiHint")}</p>
+        <div className="property-groups">
+          <AlignmentControls />
+          <div className="empty-properties">
+            <SlidersHorizontal size={24} />
+            <b>{t("properties.multiSelected", { count: multiCount })}</b>
+            <p>{t("properties.multiHint")}</p>
+          </div>
         </div>
       )}
       {selected && <Properties element={selected} update={update} upload={upload} />}
@@ -486,19 +657,14 @@ function Properties({
           onChange={(value) => change({ rotation: value })}
         />
       </section>
+      <AlignmentControls />
       {element.kind === "text" && <TextProperties element={element} change={change} />}
       {element.kind === "rect" && (
         <>
           <section>
             <h3>{t("properties.shape")}</h3>
-            <label className="property-field color">
-              <span>{t("properties.fill")}</span>
-              <input
-                type="color"
-                value={element.fill}
-                onChange={(event) => change({ fill: event.target.value })}
-              />
-            </label>
+            <FillControls fill={element.fill} gradient={element.gradient} onChange={change} />
+            <StrokeControls stroke={element.stroke} onChange={(next) => change({ stroke: next })} />
             <NumberField
               label={t("properties.radius")}
               value={element.radius}
@@ -515,14 +681,8 @@ function Properties({
       {element.kind === "circle" && (
         <section>
           <h3>{t("properties.shape")}</h3>
-          <label className="property-field color">
-            <span>{t("properties.fill")}</span>
-            <input
-              type="color"
-              value={element.fill}
-              onChange={(event) => change({ fill: event.target.value })}
-            />
-          </label>
+          <FillControls fill={element.fill} gradient={element.gradient} onChange={change} />
+          <StrokeControls stroke={element.stroke} onChange={(next) => change({ stroke: next })} />
           <NumberField
             label={t("properties.radius")}
             value={element.radius}
@@ -534,27 +694,15 @@ function Properties({
       {element.kind === "ellipse" && (
         <section>
           <h3>{t("properties.shape")}</h3>
-          <label className="property-field color">
-            <span>{t("properties.fill")}</span>
-            <input
-              type="color"
-              value={element.fill}
-              onChange={(event) => change({ fill: event.target.value })}
-            />
-          </label>
+          <FillControls fill={element.fill} gradient={element.gradient} onChange={change} />
+          <StrokeControls stroke={element.stroke} onChange={(next) => change({ stroke: next })} />
         </section>
       )}
       {element.kind === "polygon" && (
         <section>
           <h3>{t("properties.shape")}</h3>
-          <label className="property-field color">
-            <span>{t("properties.fill")}</span>
-            <input
-              type="color"
-              value={element.fill}
-              onChange={(event) => change({ fill: event.target.value })}
-            />
-          </label>
+          <FillControls fill={element.fill} gradient={element.gradient} onChange={change} />
+          <StrokeControls stroke={element.stroke} onChange={(next) => change({ stroke: next })} />
           <NumberField
             label={t("properties.sides")}
             value={element.sides}
@@ -567,14 +715,8 @@ function Properties({
       {element.kind === "star" && (
         <section>
           <h3>{t("properties.shape")}</h3>
-          <label className="property-field color">
-            <span>{t("properties.fill")}</span>
-            <input
-              type="color"
-              value={element.fill}
-              onChange={(event) => change({ fill: event.target.value })}
-            />
-          </label>
+          <FillControls fill={element.fill} gradient={element.gradient} onChange={change} />
+          <StrokeControls stroke={element.stroke} onChange={(next) => change({ stroke: next })} />
           <NumberField
             label={t("properties.starPoints")}
             value={element.points}

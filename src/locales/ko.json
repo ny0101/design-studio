@@ -143,9 +143,29 @@
     "icon": "아이콘",
     "stroke": "선 색상",
     "strokeWidth": "두께",
+    "gradient": "그라디언트",
+    "gradientFrom": "시작 색상",
+    "gradientTo": "끝 색상",
+    "angle": "각도",
+    "border": "테두리",
+    "align": "정렬",
     "sides": "변의 수",
     "starPoints": "꼭짓점 수",
     "innerRadius": "내부 반경"
+  },
+  "align": {
+    "left": "왼쪽 정렬",
+    "centerX": "가로 중앙 정렬",
+    "right": "오른쪽 정렬",
+    "top": "위 정렬",
+    "middle": "세로 중앙 정렬",
+    "bottom": "아래 정렬",
+    "distributeH": "가로 간격 분배",
+    "distributeV": "세로 간격 분배"
+  },
+  "background": {
+    "title": "배경",
+    "custom": "사용자 색상"
   },
   "templates": {
     "title": "템플릿",

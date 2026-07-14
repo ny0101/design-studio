@@ -143,9 +143,29 @@
     "icon": "Icon",
     "stroke": "Stroke",
     "strokeWidth": "Thickness",
+    "gradient": "Gradient",
+    "gradientFrom": "Start color",
+    "gradientTo": "End color",
+    "angle": "Angle",
+    "border": "Border",
+    "align": "Align",
     "sides": "Sides",
     "starPoints": "Points",
     "innerRadius": "Inner radius"
+  },
+  "align": {
+    "left": "Align left",
+    "centerX": "Align horizontal center",
+    "right": "Align right",
+    "top": "Align top",
+    "middle": "Align vertical center",
+    "bottom": "Align bottom",
+    "distributeH": "Distribute horizontally",
+    "distributeV": "Distribute vertically"
+  },
+  "background": {
+    "title": "Background",
+    "custom": "Custom color"
   },
   "templates": {
     "title": "Templates",

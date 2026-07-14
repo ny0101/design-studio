@@ -548,6 +548,41 @@ button:disabled {
   display: flex;
   gap: 4px;
 }
+.align-buttons.wrap {
+  flex-wrap: wrap;
+}
+.swatch-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+.swatch-grid button {
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 2px solid #373a43;
+  border-radius: 7px;
+}
+.swatch-grid button:hover,
+.swatch-grid button.selected {
+  border-color: #6c7cff;
+}
+.background-custom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  color: #aeb3c0;
+  font-size: 11px;
+}
+.background-custom input {
+  width: 44px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid #373a43;
+  border-radius: 6px;
+  background: transparent;
+}
 .align-buttons button {
   display: grid;
   place-items: center;
