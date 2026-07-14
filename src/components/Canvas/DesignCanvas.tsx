@@ -31,8 +31,8 @@ import { createShapeElement } from "../../utils/shapes";
 import { DEFAULT_FONT } from "../../utils/fonts";
 import { createImageElement } from "../../utils/images";
 import { buildSvg } from "../../utils/svg-export";
+import { DocumentSizeMenu } from "./DocumentSizeMenu";
 
-export const CANVAS_SIZE = 1080;
 const MIN_SIZE = 5;
 const RULER_SIZE = 22;
 const SAFE_AREA_INSET = 54;
@@ -466,6 +466,7 @@ export function DesignCanvas() {
     setZoom,
     pan,
     setPan,
+    canvasSize,
     showGrid,
     showGuides,
     showRulers,
@@ -475,11 +476,30 @@ export function DesignCanvas() {
   } = useStudioStore();
   const { t } = useTranslation();
   const scale = zoom / 100;
+  const canvasW = canvasSize.width;
+  const canvasH = canvasSize.height;
   const centeredPan: CanvasPan = {
-    x: (viewport.width - CANVAS_SIZE * scale) / 2,
-    y: (viewport.height - CANVAS_SIZE * scale) / 2,
+    x: (viewport.width - canvasW * scale) / 2,
+    y: (viewport.height - canvasH * scale) / 2,
   };
   const effectivePan = pan ?? centeredPan;
+
+  useEffect(() => {
+    const fit = () => {
+      const node = viewportRef.current;
+      if (!node) return;
+      const zoomFit = Math.floor(
+        Math.min(
+          (node.clientWidth - 90) / canvasW,
+          (node.clientHeight - 90) / canvasH,
+        ) * 100,
+      );
+      setZoom(zoomFit);
+      setPan(null);
+    };
+    window.addEventListener("design-studio:fit", fit);
+    return () => window.removeEventListener("design-studio:fit", fit);
+  }, [canvasW, canvasH, setZoom, setPan]);
 
   useEffect(() => {
     const node = viewportRef.current;
@@ -525,8 +545,9 @@ export function DesignCanvas() {
       const format =
         (event as CustomEvent<{ format?: string }>).detail?.format ?? "png";
       const state = useStudioStore.getState();
+      const { width: exportW, height: exportH } = state.canvasSize;
       if (format === "svg") {
-        const svg = buildSvg(state.elements, CANVAS_SIZE);
+        const svg = buildSvg(state.elements, exportW, exportH);
         const blob = new Blob([svg], { type: "image/svg+xml" });
         const url = URL.createObjectURL(blob);
         download(url, "design-studio.svg");
@@ -547,8 +568,8 @@ export function DesignCanvas() {
           !bottom.hidden &&
           bottom.x <= 0 &&
           bottom.y <= 0 &&
-          bottom.x + bottom.width >= CANVAS_SIZE &&
-          bottom.y + bottom.height >= CANVAS_SIZE
+          bottom.x + bottom.width >= exportW &&
+          bottom.y + bottom.height >= exportH
         ) {
           const node = stage.findOne(`#${bottom.id}`);
           if (node) hiddenNodes.push(node);
@@ -560,8 +581,8 @@ export function DesignCanvas() {
       const uri = stage.toDataURL({
         x: position.x,
         y: position.y,
-        width: CANVAS_SIZE * currentScale,
-        height: CANVAS_SIZE * currentScale,
+        width: exportW * currentScale,
+        height: exportH * currentScale,
         pixelRatio: 2 / currentScale,
         mimeType: format === "jpg" ? "image/jpeg" : "image/png",
         quality: 0.92,
@@ -571,11 +592,11 @@ export function DesignCanvas() {
       if (format === "pdf") {
         const { jsPDF } = await import("jspdf");
         const doc = new jsPDF({
-          orientation: "portrait",
+          orientation: exportW > exportH ? "landscape" : "portrait",
           unit: "px",
-          format: [CANVAS_SIZE, CANVAS_SIZE],
+          format: [exportW, exportH],
         });
-        doc.addImage(uri, "PNG", 0, 0, CANVAS_SIZE, CANVAS_SIZE);
+        doc.addImage(uri, "PNG", 0, 0, exportW, exportH);
         doc.save("design-studio.pdf");
         return;
       }
@@ -617,9 +638,10 @@ export function DesignCanvas() {
 
   const collectSnapTargets = useCallback((dragged: Konva.Node) => {
     const layer = dragged.getLayer();
-    const vertical = [0, CANVAS_SIZE / 2, CANVAS_SIZE];
-    const horizontal = [0, CANVAS_SIZE / 2, CANVAS_SIZE];
     const state = useStudioStore.getState();
+    const { width, height } = state.canvasSize;
+    const vertical = [0, width / 2, width];
+    const horizontal = [0, height / 2, height];
     const moving = new Set(
       state.selectedIds.includes(dragged.id()) ? state.selectedIds : [dragged.id()],
     );
@@ -800,7 +822,8 @@ export function DesignCanvas() {
     if (event.target === event.target.getStage()) select(null);
   };
 
-  const gridLines = Math.floor(CANVAS_SIZE / 40) + 1;
+  const gridCols = Math.floor(canvasW / 40) + 1;
+  const gridRows = Math.floor(canvasH / 40) + 1;
   const editingText = elements.find(
     (element): element is TextElement =>
       element.id === editingId && element.kind === "text",
@@ -847,8 +870,8 @@ export function DesignCanvas() {
                 ref={artboardRef}
                 x={0}
                 y={0}
-                width={CANVAS_SIZE}
-                height={CANVAS_SIZE}
+                width={canvasW}
+                height={canvasH}
                 fill="#FFFFFF"
                 listening={false}
                 shadowColor="rgba(0, 0, 0, 0.4)"
@@ -867,19 +890,19 @@ export function DesignCanvas() {
             <Layer ref={overlayRef} listening={!panning}>
               {showGrid && (
                 <Group listening={false}>
-                  {Array.from({ length: gridLines }, (_, index) => (
+                  {Array.from({ length: gridCols }, (_, index) => (
                     <Line
                       key={`v${index}`}
-                      points={[index * 40, 0, index * 40, CANVAS_SIZE]}
+                      points={[index * 40, 0, index * 40, canvasH]}
                       stroke="#16181D"
                       opacity={0.07}
                       strokeWidth={1 / scale}
                     />
                   ))}
-                  {Array.from({ length: gridLines }, (_, index) => (
+                  {Array.from({ length: gridRows }, (_, index) => (
                     <Line
                       key={`h${index}`}
-                      points={[0, index * 40, CANVAS_SIZE, index * 40]}
+                      points={[0, index * 40, canvasW, index * 40]}
                       stroke="#16181D"
                       opacity={0.07}
                       strokeWidth={1 / scale}
@@ -890,14 +913,14 @@ export function DesignCanvas() {
               {showGuides && (
                 <Group listening={false}>
                   <Line
-                    points={[CANVAS_SIZE / 2, 0, CANVAS_SIZE / 2, CANVAS_SIZE]}
+                    points={[canvasW / 2, 0, canvasW / 2, canvasH]}
                     stroke="#6C7CFF"
                     dash={[10, 8]}
                     opacity={0.55}
                     strokeWidth={1 / scale}
                   />
                   <Line
-                    points={[0, CANVAS_SIZE / 2, CANVAS_SIZE, CANVAS_SIZE / 2]}
+                    points={[0, canvasH / 2, canvasW, canvasH / 2]}
                     stroke="#6C7CFF"
                     dash={[10, 8]}
                     opacity={0.55}
@@ -909,8 +932,8 @@ export function DesignCanvas() {
                 <Rect
                   x={SAFE_AREA_INSET}
                   y={SAFE_AREA_INSET}
-                  width={CANVAS_SIZE - SAFE_AREA_INSET * 2}
-                  height={CANVAS_SIZE - SAFE_AREA_INSET * 2}
+                  width={canvasW - SAFE_AREA_INSET * 2}
+                  height={canvasH - SAFE_AREA_INSET * 2}
                   stroke="#F97066"
                   dash={[12, 8]}
                   opacity={0.7}
@@ -996,9 +1019,7 @@ export function DesignCanvas() {
           </>
         )}
         <div className="canvas-meta">
-          <span>
-            {CANVAS_SIZE} × {CANVAS_SIZE} px
-          </span>
+          <DocumentSizeMenu />
           <span>{zoom}%</span>
         </div>
       </div>

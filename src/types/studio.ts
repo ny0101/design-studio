@@ -169,6 +169,11 @@ export interface CanvasPan {
   y: number;
 }
 
+export interface CanvasSize {
+  width: number;
+  height: number;
+}
+
 export interface StudioState {
   view: WorkspaceView;
   theme: ColorTheme;
@@ -176,6 +181,7 @@ export interface StudioState {
   activeTool: StudioTool;
   zoom: number;
   pan: CanvasPan | null;
+  canvasSize: CanvasSize;
   showGrid: boolean;
   showGuides: boolean;
   showRulers: boolean;

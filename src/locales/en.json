@@ -16,7 +16,26 @@
     "preview": "Preview",
     "export": "Export",
     "settings": "Settings",
-    "language": "Switch language"
+    "language": "Switch language",
+    "zoomMenu": "Zoom presets",
+    "zoomFit": "Fit to screen"
+  },
+  "menu": {
+    "newDocument": "New document",
+    "openProject": "Open project…",
+    "saveProject": "Save project",
+    "lightTheme": "Light theme",
+    "darkTheme": "Dark theme"
+  },
+  "sizes": {
+    "instagramPost": "Instagram post",
+    "instagramStory": "Instagram story",
+    "youtubeThumbnail": "YouTube thumbnail",
+    "presentation": "Presentation",
+    "a4": "A4 document",
+    "width": "Width",
+    "height": "Height",
+    "apply": "Apply"
   },
   "tools": {
     "select": "Select",

@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import type { ShapePreset } from "../../utils/shapes";
 import { SHAPE_PRESETS, createShapeElement } from "../../utils/shapes";
-import { CANVAS_SIZE } from "../Canvas/DesignCanvas";
 import { useStudioStore } from "../../store/studio-store";
 import { useTranslation } from "../../hooks/useTranslation";
 
@@ -29,13 +28,13 @@ const glyphs: Record<ShapePreset, ReactNode> = {
 };
 
 export function ShapePicker() {
-  const { add, setTool } = useStudioStore();
+  const { add, setTool, canvasSize } = useStudioStore();
   const { t } = useTranslation();
   const pick = (preset: ShapePreset) => {
     add(
       createShapeElement(
         preset,
-        { x: CANVAS_SIZE / 2, y: CANVAS_SIZE / 2 },
+        { x: canvasSize.width / 2, y: canvasSize.height / 2 },
         t(`shapes.${preset}`),
       ),
     );

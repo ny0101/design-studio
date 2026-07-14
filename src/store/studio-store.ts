@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type {
   CanvasElement,
   CanvasPan,
+  CanvasSize,
   ColorTheme,
   Language,
   StudioState,
@@ -9,6 +10,7 @@ import type {
   WorkspaceView,
 } from "../types/studio";
 import { detectLanguage, persistLanguage } from "../utils/i18n";
+import { DEFAULT_CANVAS_SIZE, loadStoredProject } from "../utils/project";
 
 const initialElements: CanvasElement[] = [
   {
@@ -110,7 +112,10 @@ interface StudioActions {
   setLanguage: (language: Language) => void;
   setTool: (tool: StudioTool) => void;
   setZoom: (zoom: number) => void;
-  setPan: (pan: CanvasPan) => void;
+  setPan: (pan: CanvasPan | null) => void;
+  setCanvasSize: (size: CanvasSize) => void;
+  loadProject: (elements: CanvasElement[], size: CanvasSize) => void;
+  resetProject: () => void;
   toggleGrid: () => void;
   toggleGuides: () => void;
   toggleRulers: () => void;
@@ -134,6 +139,8 @@ interface StudioActions {
   redo: () => void;
 }
 
+const storedProject = loadStoredProject();
+
 export const useStudioStore = create<StudioState & StudioActions>((set) => ({
   view: "studio",
   theme: "dark",
@@ -141,12 +148,13 @@ export const useStudioStore = create<StudioState & StudioActions>((set) => ({
   activeTool: "select",
   zoom: 62,
   pan: null,
+  canvasSize: storedProject?.canvasSize ?? DEFAULT_CANVAS_SIZE,
   showGrid: false,
   showGuides: true,
   showRulers: false,
   showSafeArea: false,
-  elements: initialElements,
-  selectedIds: ["heading"],
+  elements: storedProject?.elements ?? initialElements,
+  selectedIds: storedProject ? [] : ["heading"],
   clipboard: [],
   past: [],
   future: [],
@@ -159,6 +167,30 @@ export const useStudioStore = create<StudioState & StudioActions>((set) => ({
   setTool: (activeTool) => set({ activeTool }),
   setZoom: (zoom) => set({ zoom: Math.min(400, Math.max(10, Math.round(zoom))) }),
   setPan: (pan) => set({ pan }),
+  setCanvasSize: (canvasSize) =>
+    set({
+      canvasSize: {
+        width: Math.min(8000, Math.max(100, Math.round(canvasSize.width))),
+        height: Math.min(8000, Math.max(100, Math.round(canvasSize.height))),
+      },
+      pan: null,
+    }),
+  loadProject: (elements, canvasSize) =>
+    set((state) => ({
+      ...saveHistory(state),
+      elements: clone(elements),
+      canvasSize,
+      selectedIds: [],
+      pan: null,
+    })),
+  resetProject: () =>
+    set((state) => ({
+      ...saveHistory(state),
+      elements: clone(initialElements),
+      canvasSize: DEFAULT_CANVAS_SIZE,
+      selectedIds: [],
+      pan: null,
+    })),
   toggleGrid: () => set((state) => ({ showGrid: !state.showGrid })),
   toggleGuides: () => set((state) => ({ showGuides: !state.showGuides })),
   toggleRulers: () => set((state) => ({ showRulers: !state.showRulers })),
@@ -306,7 +338,9 @@ export const useStudioStore = create<StudioState & StudioActions>((set) => ({
         ...element,
         id: crypto.randomUUID(),
       })),
+      canvasSize: DEFAULT_CANVAS_SIZE,
       selectedIds: [],
+      pan: null,
     })),
   undo: () =>
     set((state) => {

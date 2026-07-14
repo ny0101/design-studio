@@ -8,14 +8,35 @@ import { PropertiesPanel } from "./components/Properties/PropertiesPanel";
 import { Sidebar } from "./components/Sidebar/Sidebar";
 import { Toolbar } from "./components/Toolbar/Toolbar";
 import { LayersPanel } from "./components/Layers/LayersPanel";
+import { useEffect } from "react";
 import { useStudioStore } from "./store/studio-store";
 import { useTranslation } from "./hooks/useTranslation";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
+import { storeProject } from "./utils/project";
 
 export default function App() {
   const { theme, view, activeTool } = useStudioStore();
   const { t } = useTranslation();
   useKeyboardShortcuts();
+  useEffect(() => {
+    let timer: number | undefined;
+    const unsubscribe = useStudioStore.subscribe((state, previous) => {
+      if (
+        state.elements === previous.elements &&
+        state.canvasSize === previous.canvasSize
+      )
+        return;
+      window.clearTimeout(timer);
+      timer = window.setTimeout(
+        () => storeProject(state.elements, state.canvasSize),
+        400,
+      );
+    });
+    return () => {
+      window.clearTimeout(timer);
+      unsubscribe();
+    };
+  }, []);
   return (
     <div className="app-shell" data-theme={theme}>
       <Toolbar />

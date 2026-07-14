@@ -8,12 +8,14 @@ import {
   saveUserTemplate,
 } from "../../utils/templates";
 import { buildSvg } from "../../utils/svg-export";
-import { CANVAS_SIZE } from "../Canvas/DesignCanvas";
+import { DEFAULT_CANVAS_SIZE } from "../../utils/project";
 import { useStudioStore } from "../../store/studio-store";
 import { useTranslation } from "../../hooks/useTranslation";
 
 const previewUri = (elements: CanvasElement[]) =>
-  `data:image/svg+xml;utf8,${encodeURIComponent(buildSvg(elements, CANVAS_SIZE))}`;
+  `data:image/svg+xml;utf8,${encodeURIComponent(
+    buildSvg(elements, DEFAULT_CANVAS_SIZE.width, DEFAULT_CANVAS_SIZE.height),
+  )}`;
 
 export function TemplatePicker() {
   const { applyTemplate, setTool } = useStudioStore();
