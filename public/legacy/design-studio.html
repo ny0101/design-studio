@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>디자인 시안 스튜디오</title>
+<style>
+  :root{
+    --bg:#14151a; --panel:#1e2028; --line:#2e3140; --text:#eceef4; --muted:#9aa0b0;
+    --accent:#6c7cff;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  body{
+    font-family:"Pretendard","Malgun Gothic","Segoe UI",sans-serif;
+    background:var(--bg); color:var(--text);
+    display:flex; min-height:100vh;
+  }
+  aside{
+    width:340px; min-width:340px; background:var(--panel);
+    border-right:1px solid var(--line); padding:20px;
+    overflow-y:auto; height:100vh; position:sticky; top:0;
+  }
+  aside h1{font-size:17px; margin-bottom:4px}
+  aside .sub{font-size:12px; color:var(--muted); margin-bottom:18px; line-height:1.5}
+  .tabs{display:flex; gap:6px; margin-bottom:18px}
+  .tabs button{
+    flex:1; border:1px solid var(--line); background:#14161c; color:var(--muted);
+    border-radius:8px; padding:9px 0; font-size:13px; cursor:pointer; font-family:inherit; font-weight:600;
+  }
+  .tabs button.on{background:var(--accent); border-color:var(--accent); color:#fff}
+  .group{border-top:1px solid var(--line); padding-top:14px; margin-top:4px}
+  .group > .gt{font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin-bottom:12px; font-weight:700}
+  .field{margin-bottom:14px}
+  .field.hidden, .group.hidden{display:none}
+  .field label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px; font-weight:600}
+  .field input[type=text], .field textarea, .field select{
+    width:100%; background:#14161c; color:var(--text);
+    border:1px solid var(--line); border-radius:8px;
+    padding:9px 11px; font-size:14px; font-family:inherit;
+  }
+  .field textarea{resize:vertical; min-height:52px; line-height:1.4}
+  .field input:focus, .field textarea:focus, .field select:focus{outline:none; border-color:var(--accent)}
+  .chips{display:flex; flex-wrap:wrap; gap:6px}
+  .chips button{
+    border:1px solid var(--line); background:#14161c; color:var(--muted);
+    border-radius:20px; padding:6px 12px; font-size:12px; cursor:pointer; font-family:inherit;
+  }
+  .chips button.on{background:var(--accent); border-color:var(--accent); color:#fff}
+  .swatches{display:flex; gap:8px; flex-wrap:wrap}
+  .swatches button{width:38px; height:38px; border-radius:10px; border:2px solid transparent; cursor:pointer}
+  .swatches button.on{border-color:#fff}
+  .range-row{display:flex; align-items:center; gap:10px}
+  .range-row input[type=range]{flex:1; accent-color:var(--accent)}
+  .range-row span{font-size:12px; color:var(--muted); width:40px; text-align:right}
+  .drop{
+    border:1.5px dashed var(--line); border-radius:10px; padding:18px; text-align:center;
+    font-size:12px; color:var(--muted); cursor:pointer; transition:.15s;
+  }
+  .drop.hover{border-color:var(--accent); color:var(--text); background:#14161c}
+  .drop b{color:var(--accent)}
+  .thumb{margin-top:8px; display:none; align-items:center; gap:8px}
+  .thumb img{width:44px; height:44px; object-fit:cover; border-radius:8px; border:1px solid var(--line)}
+  .thumb button{background:none; border:none; color:#ff6b6b; font-size:12px; cursor:pointer; font-family:inherit}
+  main{flex:1; display:flex; flex-direction:column; align-items:center; padding:26px; gap:16px}
+  #stage{flex:1; width:100%; display:flex; align-items:center; justify-content:center; min-height:0}
+  #preview{max-width:100%; max-height:calc(100vh - 130px); display:flex; align-items:center; justify-content:center}
+  #preview svg{max-width:100%; max-height:calc(100vh - 130px); height:auto; border-radius:6px; box-shadow:0 12px 40px rgba(0,0,0,.5)}
+  .actions{display:flex; gap:10px}
+  .actions button{
+    font-family:inherit; font-size:14px; font-weight:600; cursor:pointer;
+    padding:11px 20px; border-radius:10px; border:1px solid var(--line);
+    background:var(--panel); color:var(--text);
+  }
+  .actions button.primary{background:var(--accent); border-color:var(--accent); color:#fff}
+  .actions button:hover{filter:brightness(1.15)}
+  .hint{font-size:12px; color:var(--muted)}
+  .two{display:flex; gap:10px}
+  .two .field{flex:1}
+  .colorRow{display:flex; align-items:center; gap:8px; margin-bottom:8px}
+  .colorRow span{font-size:12px; color:var(--muted); width:82px; flex-shrink:0}
+  .colorRow input[type=color]{width:34px; height:30px; padding:0; border:1px solid var(--line); border-radius:6px; background:none; cursor:pointer}
+  .colorRow input[type=text]{flex:1; background:#14161c; color:var(--text); border:1px solid var(--line); border-radius:6px; padding:6px 8px; font-size:13px; font-family:inherit; text-transform:uppercase}
+  .navbtn{width:44px; padding:9px 0; border:1px solid var(--line); background:#14161c; color:var(--text); border-radius:8px; cursor:pointer; font-family:inherit}
+  .navbtn:hover{border-color:var(--accent)}
+</style>
+</head>
+<body>
+
+<aside>
+  <h1>디자인 시안 스튜디오</h1>
+  <div class="sub">입력하면 실시간 반영됩니다. SVG는 일러스트레이터에서 벡터 편집 가능.</div>
+
+  <div class="tabs" id="modeTabs">
+    <button data-mode="banner" class="on">배너</button>
+    <button data-mode="coupon">쿠폰</button>
+    <button data-mode="promo">프로모션</button>
+    <button data-mode="gen">자동생성</button>
+  </div>
+
+  <button id="resetBtn" title="모든 설정을 기본값으로 되돌립니다" style="width:100%; margin:-6px 0 14px; padding:8px 0; border:1px solid var(--line); background:#14161c; color:var(--muted); border-radius:8px; font-family:inherit; font-size:12px; cursor:pointer">↺ 설정 초기화</button>
+
+  <!-- 자동 생성 컨트롤 -->
+  <div class="group hidden" id="genGroup" style="border-top:none; padding-top:0; margin-top:0">
+    <div class="gt">자동 디자인 생성</div>
+    <button id="genShuffle" style="width:100%; padding:14px; border-radius:10px; border:none; background:var(--accent); color:#fff; font-family:inherit; font-size:15px; font-weight:700; cursor:pointer">🎲 새 디자인 뽑기</button>
+    <div style="display:flex; align-items:center; gap:8px; margin-top:10px">
+      <button id="genPrev" class="navbtn">◀</button>
+      <div style="flex:1; text-align:center; font-size:12px; color:var(--muted)">시드 <b id="genSeed" style="color:var(--text)">1</b></div>
+      <button id="genNext" class="navbtn">▶</button>
+    </div>
+    <div style="font-size:11px; color:var(--muted); margin-top:8px; line-height:1.5">
+      누를 때마다 배경·배치·장식·타이포가 새로 조합됩니다. 같은 시드는 항상 같은 디자인이라, 마음에 든 번호를 기억해두면 다시 뽑을 수 있어요.
+    </div>
+  </div>
+
+  <!-- 공통: 사이즈 -->
+  <div class="field">
+    <label>사이즈</label>
+    <select id="size">
+      <option value="feed">인스타 피드 (1080×1080)</option>
+      <option value="story">인스타 스토리 (1080×1920)</option>
+      <option value="banner">웹 배너 가로형 (1600×600)</option>
+      <option value="wide">와이드 (1920×1080)</option>
+      <option value="coupon">쿠폰 (1200×560)</option>
+      <option value="promo">프로모션 세로 (1080×1280)</option>
+      <option value="youtube">유튜브 썸네일 (1280×720)</option>
+      <option value="pin">핀터레스트 핀 (1000×1500)</option>
+      <option value="custom">직접 입력 ↓</option>
+    </select>
+  </div>
+  <div class="field hidden" id="customSizeField">
+    <label>커스텀 사이즈 (px)</label>
+    <div class="two">
+      <div class="field" style="margin:0">
+        <input type="text" id="customW" value="1080" inputmode="numeric" placeholder="가로">
+      </div>
+      <div style="display:flex; align-items:center; color:var(--muted)">×</div>
+      <div class="field" style="margin:0">
+        <input type="text" id="customH" value="1350" inputmode="numeric" placeholder="세로">
+      </div>
+    </div>
+  </div>
+
+  <!-- 배너 전용 레이아웃 -->
+  <div class="field" id="layoutField">
+    <label>레이아웃</label>
+    <div class="chips" id="layouts"></div>
+  </div>
+
+  <div class="field">
+    <label>컬러 (프리셋 또는 직접 지정)</label>
+    <div class="swatches" id="palettes"></div>
+  </div>
+  <div class="field hidden" id="customColorField">
+    <label>HEX 직접 지정</label>
+    <div id="colorRows"></div>
+  </div>
+
+  <!-- 텍스트 그룹 -->
+  <div class="group">
+    <div class="gt">텍스트</div>
+    <div class="field">
+      <label>브랜드명 / 라벨</label>
+      <input type="text" id="brand" value="RIHOON">
+    </div>
+    <div class="field" id="headlineField">
+      <label>메인 카피 (줄바꿈 = 줄나눔)</label>
+      <textarea id="headline">새로운 시즌,
+새로운 시작</textarea>
+    </div>
+    <div class="field">
+      <label>서브 문구</label>
+      <input type="text" id="subcopy" value="지금 바로 만나보세요 · 7월 한정 이벤트">
+    </div>
+    <div class="field" id="headSizeField">
+      <label>메인 카피 크기</label>
+      <div class="range-row">
+        <input type="range" id="headSize" min="30" max="220" value="110">
+        <span id="headSizeVal">110</span>
+      </div>
+    </div>
+    <div class="field hidden" id="mainScaleField">
+      <label>메인 문구 크기 (%)</label>
+      <div class="range-row">
+        <input type="range" id="mainScale" min="50" max="160" value="100">
+        <span id="mainScaleVal">100%</span>
+      </div>
+    </div>
+    <div class="field" id="mainYField">
+      <label>메인 위치 (상하)</label>
+      <div class="range-row">
+        <input type="range" id="mainY" min="-30" max="30" value="0">
+        <span id="mainYVal">0</span>
+      </div>
+    </div>
+    <div class="field" id="subScaleField">
+      <label>서브 크기 (%)</label>
+      <div class="range-row">
+        <input type="range" id="subScale" min="50" max="200" value="100">
+        <span id="subScaleVal">100%</span>
+      </div>
+    </div>
+    <div class="field" id="subYField">
+      <label>서브 위치 (상하)</label>
+      <div class="range-row">
+        <input type="range" id="subY" min="-30" max="30" value="0">
+        <span id="subYVal">0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 쿠폰 전용 -->
+  <div class="group hidden" id="couponGroup">
+    <div class="gt">쿠폰 정보</div>
+    <div class="two">
+      <div class="field">
+        <label>할인 값</label>
+        <input type="text" id="discount" value="30%">
+      </div>
+      <div class="field">
+        <label>단위 문구</label>
+        <input type="text" id="discountLabel" value="OFF">
+      </div>
+    </div>
+    <div class="field">
+      <label>쿠폰 코드</label>
+      <input type="text" id="couponCode" value="RIHOON30">
+    </div>
+    <div class="field">
+      <label>유효기간 / 조건</label>
+      <input type="text" id="couponValid" value="~ 2026.07.31 까지 · 3만원 이상 구매 시">
+    </div>
+    <div class="field">
+      <label>스타일</label>
+      <div class="chips" id="couponStyles"></div>
+    </div>
+  </div>
+
+  <!-- 레퍼런스 분석 -->
+  <div class="group">
+    <div class="gt">예시 파일에서 스타일 추출</div>
+    <div class="field">
+      <label>예시 이미지 업로드 → 색상·비율 자동 적용</label>
+      <div class="drop" id="refDrop">참고할 이미지를 <b>드래그하거나 클릭</b></div>
+      <input type="file" id="refInput" accept="image/*" style="display:none">
+      <div class="thumb" id="refThumb">
+        <img id="refThumbImg" alt="">
+        <button onclick="clearRef()">삭제</button>
+      </div>
+    </div>
+    <div class="field" id="refPaletteWrap" style="display:none">
+      <label>추출된 색상 (클릭하면 포인트로 지정)</label>
+      <div class="swatches" id="refSwatches" style="gap:6px"></div>
+    </div>
+    <div class="field" id="refOptWrap" style="display:none">
+      <div class="chips">
+        <button id="refApplyColors" class="on">색상 적용</button>
+        <button id="refApplyRatio" class="on">비율 맞춤</button>
+      </div>
+    </div>
+    <div class="field" id="traceWrap" style="display:none">
+      <label>그림도 비슷한 스타일로 벡터화</label>
+      <div class="chips" id="traceStyles"></div>
+      <div class="range-row" style="margin-top:8px">
+        <span style="width:auto; color:var(--muted); font-size:12px">디테일</span>
+        <input type="range" id="traceDetail" min="24" max="160" value="80">
+        <span id="traceDetailVal">80</span>
+      </div>
+      <div class="chips" style="margin-top:8px">
+        <button id="traceBtn" style="background:var(--accent); border-color:var(--accent); color:#fff">그림 벡터화 적용</button>
+        <button id="traceClear">그림 지우기</button>
+      </div>
+      <div style="font-size:11px; color:var(--muted); margin-top:6px; line-height:1.5">
+        예시의 형태·색을 벡터 도형으로 재구성합니다. 원본 그림·로고를 100% 똑같이 복제하진 않고 스타일을 닮게 떠줘요.
+      </div>
+    </div>
+  </div>
+
+  <!-- 프로모션 전용 -->
+  <div class="group hidden" id="promoGroup">
+    <div class="gt">프로모션 문구</div>
+    <div class="field">
+      <label>상단 세일 문구</label>
+      <input type="text" id="saleHeader" value="UP TO 70% OFF SALE">
+    </div>
+    <div class="field">
+      <label>기간</label>
+      <input type="text" id="saleDates" value="08.17-08.30">
+    </div>
+    <div class="field">
+      <label>메인 1 (타원+반짝이 강조)</label>
+      <input type="text" id="promoMain1" value="썸머">
+    </div>
+    <div class="field">
+      <label>메인 2 (컬러 대형)</label>
+      <input type="text" id="promoMain2" value="시즌오프">
+    </div>
+    <div class="field">
+      <label>배지 (스티커)</label>
+      <input type="text" id="promoBadge" value="특가">
+    </div>
+    <div class="field">
+      <div class="hint" style="line-height:1.5">이미지를 업로드하면 그 안의 요소들이 벡터 스티커로 변환되어 카드 곳곳에 배치됩니다.</div>
+    </div>
+  </div>
+
+  <!-- 이미지 그룹 -->
+  <div class="group">
+    <div class="gt">이미지 삽입 / 재가공</div>
+    <div class="field">
+      <label>이미지 업로드</label>
+      <div class="drop" id="drop">여기로 드래그하거나 <b>클릭해서 선택</b></div>
+      <input type="file" id="fileInput" accept="image/*" style="display:none">
+      <div class="thumb" id="thumb">
+        <img id="thumbImg" alt="">
+        <button onclick="clearImage()">삭제</button>
+      </div>
+      <div class="hint" id="imgUploadHint" style="display:none; margin-top:6px">이 모드에서는 사진이 그대로 들어가지 않아요. 색상·레이아웃을 분석해 비슷한 분위기의 벡터 디자인으로 반영합니다.</div>
+    </div>
+    <div class="field" id="imgFieldWrap" style="display:none">
+      <label>이미지 배치</label>
+      <div class="chips" id="imgModes"></div>
+    </div>
+    <div class="field" id="imgFxWrap" style="display:none">
+      <label>필터 / 재가공</label>
+      <div class="chips" id="imgFx"></div>
+    </div>
+    <div class="field" id="imgOpacityWrap" style="display:none">
+      <label>오버레이 어둡기 (배경 모드)</label>
+      <div class="range-row">
+        <input type="range" id="imgOverlay" min="0" max="80" value="40">
+        <span id="imgOverlayVal">40%</span>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<main>
+  <div id="stage"><div id="preview"></div></div>
+  <div class="actions">
+    <button class="primary" onclick="downloadSVG()">SVG 다운로드</button>
+    <button onclick="downloadPNG(1)">PNG (1x)</button>
+    <button onclick="downloadPNG(2)">PNG (2x)</button>
+    <button onclick="downloadJPG(1)">JPG</button>
+  </div>
+  <div class="hint">SVG → 일러스트레이터 벡터 편집 / PNG·JPG → 포토샵·바로 업로드용 · 업로드한 이미지는 파일에 함께 저장됩니다</div>
+</main>
+
+<script>
+const SIZES = {
+  feed:[1080,1080], story:[1080,1920], banner:[1600,600], wide:[1920,1080], coupon:[1200,560], promo:[1080,1280],
+  youtube:[1280,720], pin:[1000,1500],
+};
+function getSize(){
+  if(state.size==="custom"){
+    let w=parseInt($("customW").value,10), h=parseInt($("customH").value,10);
+    if(!w||w<50) w=50; if(w>6000) w=6000;
+    if(!h||h<50) h=50; if(h>6000) h=6000;
+    return [w,h];
+  }
+  return SIZES[state.size];
+}
+const PALETTES = [
+  { name:"미니멀", bg:"#f7f5f0", bg2:"#f7f5f0", fg:"#111111", sub:"#555555", accent:"#ff5a2f" },
+  { name:"비비드", bg:"#5b2fe0", bg2:"#e0308f", fg:"#ffffff", sub:"#ffe4f2", accent:"#ffd23f" },
+  { name:"다크",   bg:"#0e1220", bg2:"#1a2138", fg:"#f2f4ff", sub:"#9aa4c8", accent:"#4de3c1" },
+  { name:"파스텔", bg:"#fdeee4", bg2:"#e4f0fd", fg:"#3a3550", sub:"#7a7590", accent:"#f78fb3" },
+  { name:"세일레드", bg:"#e01e2b", bg2:"#ff5a2f", fg:"#ffffff", sub:"#ffe0d8", accent:"#ffd23f" },
+  { name:"썸머세일", bg:"#4f3ff0", bg2:"#6d7bf7", fg:"#141414", sub:"#ffffff", accent:"#88e83c" },
+];
+const LAYOUTS = ["센터 포커스", "좌측 강조", "프레임", "웨이브"];
+const COUPON_STYLES = ["티켓(반원)", "점선 테두리", "심플 밴드"];
+const IMG_MODES = ["배경 채움", "우측 반쪽", "원형", "둥근 사각"];
+const IMG_FX = ["원본", "흑백", "듀오톤", "밝게", "어둡게", "세피아"];
+
+let state = {
+  mode:"banner", size:"feed", layout:0, palette:1,
+  imgMode:0, imgFx:0, image:null, imgW:0, imgH:0,
+  couponStyle:0,
+  useCustomColor:false,
+  customPalette:{ name:"직접", bg:"#5b2fe0", bg2:"#e0308f", fg:"#ffffff", sub:"#ffe4f2", accent:"#ffd23f" },
+  trace:null,        // {inner, w, h} 벡터화 결과
+  traceStyle:0,
+  refLayout:null,    // 업로드 이미지의 레이아웃 분석 결과 {anchorLayout, bgStyle}
+  motifs:null,       // 업로드 이미지에서 추출한 개별 벡터 요소들 [{inner,w,h}]
+  seed:1,
+};
+let refImgEl=null;   // 마지막으로 업로드한 예시 이미지(재벡터화용)
+const TRACE_STYLES=["플랫 벡터","점묘 도트","라인 아트","픽셀 블록"];
+const COLOR_ROLES = [
+  ["bg","배경"], ["bg2","배경 (그라디언트 끝)"], ["fg","글자"], ["sub","서브 글자"], ["accent","포인트"],
+];
+function getPalette(){ return state.useCustomColor ? state.customPalette : PALETTES[state.palette]; }
+function hasSource(){ return !!(state.image || state.trace); }
+
+const FONT = `Pretendard, 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif`;
+const $ = id => document.getElementById(id);
+function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+function headlineTspans(lines, x, size, firstDy){
+  return lines.map((ln,i)=>`<tspan x="${x}" dy="${i===0?firstDy:size*1.18}">${esc(ln)}</tspan>`).join("");
+}
+function bgFill(p,W,H,id="g"){
+  if (p.bg===p.bg2) return `<rect width="${W}" height="${H}" fill="${p.bg}"/>`;
+  return `<linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="${p.bg}"/><stop offset="1" stop-color="${p.bg2}"/>
+  </linearGradient><rect width="${W}" height="${H}" fill="url(#${id})"/>`;
+}
+
+/* 이미지 필터 defs */
+function fxFilter(fx, p){
+  // returns {filterId, defs} ; fx index into IMG_FX
+  if (fx===0) return {f:"", defs:""};
+  if (fx===1) return {f:'filter="url(#fxGray)"', defs:`<filter id="fxGray"><feColorMatrix type="saturate" values="0"/></filter>`};
+  if (fx===2){ // duotone via grayscale + color matrix toward accent
+    const c = hexRGB(p.accent), d = hexRGB(p.bg);
+    return {f:'filter="url(#fxDuo)"', defs:`<filter id="fxDuo" color-interpolation-filters="sRGB">
+      <feColorMatrix type="matrix" values="0.33 0.33 0.33 0 0  0.33 0.33 0.33 0 0  0.33 0.33 0.33 0 0  0 0 0 1 0"/>
+      <feComponentTransfer>
+        <feFuncR type="table" tableValues="${d.r/255} ${c.r/255}"/>
+        <feFuncG type="table" tableValues="${d.g/255} ${c.g/255}"/>
+        <feFuncB type="table" tableValues="${d.b/255} ${c.b/255}"/>
+      </feComponentTransfer></filter>`};
+  }
+  if (fx===3) return {f:'filter="url(#fxBright)"', defs:`<filter id="fxBright"><feComponentTransfer><feFuncR type="linear" slope="1.25" intercept="0.06"/><feFuncG type="linear" slope="1.25" intercept="0.06"/><feFuncB type="linear" slope="1.25" intercept="0.06"/></feComponentTransfer></filter>`};
+  if (fx===4) return {f:'filter="url(#fxDark)"', defs:`<filter id="fxDark"><feComponentTransfer><feFuncR type="linear" slope="0.7"/><feFuncG type="linear" slope="0.7"/><feFuncB type="linear" slope="0.7"/></feComponentTransfer></filter>`};
+  if (fx===5) return {f:'filter="url(#fxSepia)"', defs:`<filter id="fxSepia"><feColorMatrix type="matrix" values="0.393 0.769 0.189 0 0  0.349 0.686 0.168 0 0  0.272 0.534 0.131 0 0  0 0 0 1 0"/></filter>`};
+  return {f:"", defs:""};
+}
+function hexRGB(h){ const n=parseInt(h.slice(1),16); return {r:(n>>16)&255,g:(n>>8)&255,b:n&255}; }
+function mixHex(a,b,t){ const A=hexRGB(a),B=hexRGB(b),m=(x,y)=>Math.round(x+(y-x)*t); return rgbToHex(m(A.r,B.r),m(A.g,B.g),m(A.b,B.b)); }
+// 한글(전각)=1, 영문·숫자(반각)=0.58 폭으로 대략적 텍스트 폭 계산
+function textW(t,size){ let w=0; for(const ch of t){ w+=ch.charCodeAt(0)>=0x1100?1:0.58; } return w*size; }
+
+/* object-fit: cover 계산 */
+function coverRect(iw, ih, x, y, w, h){
+  const s = Math.max(w/iw, h/ih);
+  const dw = iw*s, dh = ih*s;
+  return { x:x+(w-dw)/2, y:y+(h-dh)/2, w:dw, h:dh };
+}
+
+// 소스(래스터 이미지 또는 벡터 트레이스)를 target 사각형에 cover 채움으로 배치
+function sourceBody(x,y,w,h,f){
+  if(state.trace){
+    return `<svg x="${x}" y="${y}" width="${w}" height="${h}" viewBox="0 0 ${state.trace.w} ${state.trace.h}" preserveAspectRatio="xMidYMid slice" ${f}>${state.trace.inner}</svg>`;
+  }
+  const c=coverRect(state.imgW, state.imgH, x, y, w, h);
+  return `<image href="${state.image}" x="${c.x}" y="${c.y}" width="${c.w}" height="${c.h}" ${f} preserveAspectRatio="none"/>`;
+}
+function imageDefsAndUse(x,y,w,h,clipId,round){
+  if(!state.image && !state.trace) return {defs:"", body:""};
+  const {f,defs} = fxFilter(state.imgFx, getPalette());
+  if(clipId==="circle"){
+    const r=Math.min(w,h)/2;
+    const clip=`<clipPath id="ci"><circle cx="${x+w/2}" cy="${y+h/2}" r="${r}"/></clipPath>`;
+    return {defs:defs+clip, body:`<g clip-path="url(#ci)">${sourceBody(x,y,w,h,f)}</g>`};
+  }
+  if(clipId==="rect"){
+    const clip=`<clipPath id="cr"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${round||0}"/></clipPath>`;
+    return {defs:defs+clip, body:`<g clip-path="url(#cr)">${sourceBody(x,y,w,h,f)}</g>`};
+  }
+  return {defs, body:sourceBody(x,y,w,h,f)};
+}
+
+/* ---------- 배너 렌더 ---------- */
+function renderBanner(W,H,p){
+  const brand=$("brand").value.trim();
+  const lines=$("headline").value.split("\n").filter(l=>l.trim()!=="");
+  const sub=$("subcopy").value.trim();
+  const hs=+$("headSize").value;
+  const ssub=(+$("subScale").value||100)/100;
+  const mainOff=H*((+$("mainY").value||0)/100), subOff=H*((+$("subY").value||0)/100);
+  const cx=W/2, cy=H/2, blockH=lines.length*hs*1.18;
+  let defs="", pre="", inner="";
+
+  // 이미지 배경 처리
+  const overlay=(+$("imgOverlay").value)/100;
+  if(hasSource() && state.imgMode===0){ // 배경 채움
+    const im=imageDefsAndUse(0,0,W,H,"rect",0);
+    defs+=im.defs;
+    pre=im.body + `<rect width="${W}" height="${H}" fill="#000" opacity="${overlay}"/>`;
+  } else if(hasSource() && state.imgMode===1){ // 우측 반쪽
+    const im=imageDefsAndUse(W*0.5,0,W*0.5,H,"rect",0);
+    defs+=im.defs;
+    pre=`${bgFill(p,W,H)}${im.body}`;
+  } else {
+    pre=bgFill(p,W,H);
+  }
+
+  const useDark = hasSource() && state.imgMode===0;
+  const fg = useDark ? "#ffffff" : p.fg;
+  const subc = useDark ? "#e8e8ee" : p.sub;
+  const textX = (hasSource() && state.imgMode===1) ? W*0.06 : (state.layout===1||state.layout===3? W*0.08 : cx);
+  const anchor = (state.layout===1||state.layout===3||(hasSource()&&state.imgMode===1)) ? "start" : "middle";
+
+  // 원형/둥근 사각은 별도 요소로 배치 (배너 우상단)
+  let floatImg="";
+  if(hasSource() && (state.imgMode===2 || state.imgMode===3)){
+    const s=Math.min(W,H)*0.32;
+    const ix=W-s-Math.min(W,H)*0.08, iy=Math.min(W,H)*0.1;
+    const im=imageDefsAndUse(ix,iy,s,s, state.imgMode===2?"circle":"rect", s*0.14);
+    defs+=im.defs; floatImg=im.body;
+  }
+
+  if(anchor==="middle"){
+    const topY=cy-blockH/2+hs*0.8+mainOff;
+    inner=`
+      ${floatImg}
+      ${brand?`<text x="${cx}" y="${cy-blockH/2-hs*0.7+mainOff}" text-anchor="middle" font-family="${FONT}" font-size="${hs*0.28}" letter-spacing="${hs*0.09}" font-weight="700" fill="${useDark?p.accent:p.accent}">${esc(brand)}</text>`:""}
+      <text text-anchor="middle" font-family="${FONT}" font-weight="800" font-size="${hs}" fill="${fg}" y="${topY-hs*1.18}">${headlineTspans(lines,cx,hs,hs*1.18)}</text>
+      <line x1="${cx-hs*0.9}" y1="${cy+blockH/2+hs*0.35+mainOff}" x2="${cx+hs*0.9}" y2="${cy+blockH/2+hs*0.35+mainOff}" stroke="${p.accent}" stroke-width="${Math.max(4,hs*0.055)}"/>
+      ${sub?`<text x="${cx}" y="${cy+blockH/2+hs*0.9+subOff}" text-anchor="middle" font-family="${FONT}" font-size="${hs*0.30*ssub}" fill="${subc}">${esc(sub)}</text>`:""}`;
+  } else {
+    // 좌측 강조는 좌측 세로 중앙 정렬, 웨이브·이미지 반쪽은 좌하단 정렬
+    const centered = state.layout===1;
+    const baseY0 = centered ? (H-blockH)/2 - hs*0.2 : H*0.84-blockH;
+    const baseY = baseY0 + mainOff;
+    const subY  = (centered ? baseY0+blockH+hs*0.6 : H*0.84+hs*0.55) + subOff;
+    inner=`
+      ${floatImg}
+      ${brand?`<text x="${textX}" y="${H*0.13}" font-family="${FONT}" font-size="${hs*0.28}" letter-spacing="${hs*0.08}" font-weight="700" fill="${p.accent}">${esc(brand)}</text>`:""}
+      <rect x="${textX}" y="${baseY-hs*0.4}" width="${hs*0.65}" height="${Math.max(6,hs*0.08)}" fill="${p.accent}"/>
+      <text font-family="${FONT}" font-weight="800" font-size="${hs}" fill="${fg}" y="${baseY-hs*0.35}">${headlineTspans(lines,textX,hs,hs*1.18)}</text>
+      ${sub?`<text x="${textX}" y="${subY}" font-family="${FONT}" font-size="${hs*0.28*ssub}" fill="${subc}">${esc(sub)}</text>`:""}`;
+  }
+
+  // 프레임/웨이브 장식 (이미지 배경 아닐 때)
+  let deco="";
+  if(!useDark){
+    if(state.layout===2){
+      const m=Math.min(W,H)*0.045;
+      deco=`<rect x="${m}" y="${m}" width="${W-2*m}" height="${H-2*m}" fill="none" stroke="${p.fg}" stroke-width="${Math.max(2,m*0.12)}"/>
+            <rect x="${m*1.6}" y="${m*1.6}" width="${W-3.2*m}" height="${H-3.2*m}" fill="none" stroke="${p.accent}" stroke-width="${Math.max(1.5,m*0.07)}"/>`;
+    } else if(state.layout===3){
+      deco=`<path d="M0 ${H*0.72} C ${W*0.25} ${H*0.62}, ${W*0.4} ${H*0.86}, ${W*0.65} ${H*0.78} S ${W*0.9} ${H*0.6}, ${W} ${H*0.7} L ${W} ${H} L 0 ${H} Z" fill="${p.accent}" opacity="0.9"/>`;
+    } else if(state.layout===1){
+      deco=`<rect x="0" y="0" width="${Math.max(6,W*0.012)}" height="${H}" fill="${p.accent}"/>`;
+    } else if(state.layout===0){
+      deco=`<circle cx="${W*0.88}" cy="${H*0.12}" r="${Math.min(W,H)*0.14}" fill="${p.accent}" opacity="0.9"/>`;
+    }
+  }
+  return `<defs>${defs}</defs>${pre}${deco}${inner}`;
+}
+
+/* ---------- 쿠폰 렌더 ---------- */
+function renderCoupon(W,H,p){
+  const brand=$("brand").value.trim();
+  const disc=$("discount").value.trim();
+  const dlabel=$("discountLabel").value.trim();
+  const code=$("couponCode").value.trim();
+  const valid=$("couponValid").value.trim();
+  const sub=$("subcopy").value.trim();
+  const m=Math.min(W,H)*0.06;
+  const splitX=W*0.62; // 좌: 내용 / 우: 할인
+  let defs="", deco="", cut="";
+
+  // 배경
+  let bg=bgFill(p,W,H);
+
+  // 좌측에 이미지(둥근 사각/원형) 옵션
+  let leftImg="";
+  if(hasSource()){
+    if(state.imgMode===2){
+      const s=H*0.5; const ix=m*1.4, iy=(H-s)/2;
+      const im=imageDefsAndUse(ix,iy,s,s,"circle",0); defs+=im.defs; leftImg=im.body;
+    } else {
+      const iw=splitX-m*2, ih=H-m*2;
+      const im=imageDefsAndUse(m, m, iw, ih, "rect", 18); defs+=im.defs;
+      leftImg=im.body + `<rect x="${m}" y="${m}" width="${iw}" height="${ih}" rx="18" fill="#000" opacity="${(+$("imgOverlay").value)/100*0.6}"/>`;
+    }
+  }
+
+  // 쿠폰 스타일별 분리선
+  if(state.couponStyle===0){ // 티켓(반원) — 반원을 마스크로 실제로 뚫어냄 (투명)
+    const r=H*0.07;
+    defs+=`<mask id="ticketCut"><rect width="${W}" height="${H}" fill="#fff"/>
+      <circle cx="${splitX}" cy="0" r="${r}" fill="#000"/>
+      <circle cx="${splitX}" cy="${H}" r="${r}" fill="#000"/></mask>`;
+    cut=`<line x1="${splitX}" y1="${r+8}" x2="${splitX}" y2="${H-r-8}" stroke="${p.fg}" stroke-width="3" stroke-dasharray="2 14" stroke-linecap="round" opacity="0.5"/>`;
+  } else if(state.couponStyle===1){ // 점선 테두리
+    deco=`<rect x="${m*0.5}" y="${m*0.5}" width="${W-m}" height="${H-m}" rx="${H*0.06}" fill="none" stroke="${p.fg}" stroke-width="3" stroke-dasharray="4 12" stroke-linecap="round" opacity="0.55"/>`;
+    cut=`<line x1="${splitX}" y1="${m*1.5}" x2="${splitX}" y2="${H-m*1.5}" stroke="${p.fg}" stroke-width="2" stroke-dasharray="2 12" stroke-linecap="round" opacity="0.4"/>`;
+  } else { // 심플 밴드
+    deco=`<rect x="${splitX}" y="0" width="${W-splitX}" height="${H}" fill="${p.accent}"/>`;
+  }
+
+  const rightFg = state.couponStyle===2 ? (p.name==="미니멀"||p.name==="파스텔"?"#111":"#fff") : p.accent;
+  const rightCx=(splitX+W)/2;
+
+  const leftFg = hasSource() && state.imgMode!==2 ? "#fff" : p.fg;
+  const leftSub = hasSource() && state.imgMode!==2 ? "#eee" : p.sub;
+
+  const body=`${bg}${deco}${leftImg}
+    ${brand?`<text x="${m*1.5}" y="${H*0.2}" font-family="${FONT}" font-size="${H*0.06}" letter-spacing="2" font-weight="800" fill="${state.couponStyle!==2&&hasSource()&&state.imgMode!==2?'#fff':p.accent}">${esc(brand)}</text>`:""}
+    <text x="${m*1.5}" y="${H*0.42}" font-family="${FONT}" font-size="${H*0.11}" font-weight="800" fill="${leftFg}">COUPON</text>
+    ${sub?`<text x="${m*1.5}" y="${H*0.56}" font-family="${FONT}" font-size="${H*0.05}" fill="${leftFg}">${esc(sub)}</text>`:""}
+    <g font-family="${FONT}">
+      <rect x="${m*1.5}" y="${H*0.66}" width="${splitX-m*3}" height="${H*0.14}" rx="${H*0.03}" fill="none" stroke="${p.accent}" stroke-width="2.5" stroke-dasharray="1 9" stroke-linecap="round"/>
+      <text x="${m*1.5+ (splitX-m*3)/2}" y="${H*0.755}" text-anchor="middle" font-size="${H*0.06}" font-weight="700" letter-spacing="3" fill="${leftFg}">${esc(code||"CODE")}</text>
+    </g>
+    ${valid?`<text x="${m*1.5}" y="${H*0.9}" font-family="${FONT}" font-size="${H*0.038}" fill="${leftSub}">${esc(valid)}</text>`:""}
+    ${cut}
+    <text x="${rightCx}" y="${H*0.5}" text-anchor="middle" font-family="${FONT}" font-size="${H*0.30}" font-weight="900" fill="${rightFg}">${esc(disc)}</text>
+    <text x="${rightCx}" y="${H*0.68}" text-anchor="middle" font-family="${FONT}" font-size="${H*0.08}" font-weight="800" letter-spacing="4" fill="${rightFg}">${esc(dlabel)}</text>`;
+  // 티켓 스타일은 마스크로 반원을 뚫어서 반환
+  return `<defs>${defs}</defs>${state.couponStyle===0?`<g mask="url(#ticketCut)">${body}</g>`:body}`;
+}
+
+/* ---------- 프로모션 벡터 요소 ---------- */
+function hexLum(hex){ return luminance(hexRGB(hex)); }
+function star5(cx,cy,r,stroke,sw){
+  const pts=[];
+  for(let i=0;i<10;i++){
+    const rad=(i%2===0)?r:r*0.42, a=-Math.PI/2+i*Math.PI/5;
+    pts.push([cx+Math.cos(a)*rad, cy+Math.sin(a)*rad]);
+  }
+  return `<path d="M${pts.map(p=>p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" L ")} Z" fill="none" stroke="${stroke}" stroke-width="${sw}" stroke-linejoin="round"/>`;
+}
+function sparkle4(cx,cy,r,fill){
+  return `<path d="M ${cx} ${cy-r} Q ${cx} ${cy} ${cx+r} ${cy} Q ${cx} ${cy} ${cx} ${cy+r} Q ${cx} ${cy} ${cx-r} ${cy} Q ${cx} ${cy} ${cx} ${cy-r} Z" fill="${fill}"/>`;
+}
+function notebookTabs(x0,x1,y,count,color,tabH){
+  const unit=(x1-x0)/count, tw=unit*0.55; let r="";
+  for(let i=0;i<count;i++){
+    const tx=x0+unit*i+(unit-tw)/2;
+    r+=`<rect x="${tx.toFixed(1)}" y="${y.toFixed(1)}" width="${tw.toFixed(1)}" height="${tabH.toFixed(1)}" rx="${(tabH*0.3).toFixed(1)}" fill="${color}"/>`;
+  }
+  return r;
+}
+function tape(cx,cy,w,h,fill,rot){
+  const hw=w/2, hh=h/2;
+  const poly=`${-hw},${-hh+8} ${-hw+7},${-hh} ${hw-5},${-hh+6} ${hw},${-hh-3} ${hw},${hh-6} ${hw-7},${hh} ${-hw+5},${hh-5} ${-hw},${hh+4}`;
+  return `<g transform="translate(${cx.toFixed(1)} ${cy.toFixed(1)}) rotate(${rot})" opacity="0.92">
+    <polygon points="${poly}" fill="${fill}"/>
+    <line x1="${-hw+6}" y1="${(-hh*0.45).toFixed(1)}" x2="${hw-6}" y2="${(-hh*0.45).toFixed(1)}" stroke="rgba(0,0,0,0.12)" stroke-width="2"/>
+    <line x1="${-hw+6}" y1="${(hh*0.45).toFixed(1)}" x2="${hw-6}" y2="${(hh*0.45).toFixed(1)}" stroke="rgba(0,0,0,0.12)" stroke-width="2"/>
+  </g>`;
+}
+function tornBottomCard(x0,y0,x1,y1,fill){
+  const segs=24, dx=(x1-x0)/segs, rc=Math.min(14,(x1-x0)*0.02);
+  let d=`M ${x0} ${(y0+rc).toFixed(1)} Q ${x0} ${y0} ${(x0+rc).toFixed(1)} ${y0} L ${(x1-rc).toFixed(1)} ${y0} Q ${x1} ${y0} ${x1} ${(y0+rc).toFixed(1)} L ${x1} ${y1.toFixed(1)}`;
+  for(let i=segs;i>=0;i--){
+    const px=x0+dx*i, off=(Math.sin(i*2.1)*0.5+(i%2?0.7:-0.5))*((y1-y0)*0.012);
+    d+=` L ${px.toFixed(1)} ${(y1+off).toFixed(1)}`;
+  }
+  return `<path d="${d} Z" fill="${fill}"/>`;
+}
+function stickerText(cx,cy,txt,size,fill,stroke,anchor){
+  anchor=anchor||"middle";
+  return `<text x="${cx}" y="${(cy+size*0.07).toFixed(1)}" text-anchor="${anchor}" font-family="${FONT}" font-weight="900" font-size="${size}" fill="rgba(0,0,0,0.22)">${esc(txt)}</text>
+    <text x="${cx}" y="${cy}" text-anchor="${anchor}" font-family="${FONT}" font-weight="900" font-size="${size}" fill="${fill}" stroke="${stroke}" stroke-width="${size*0.16}" stroke-linejoin="round" paint-order="stroke">${esc(txt)}</text>`;
+}
+
+function renderPromo(W,H,p){
+  const hdr=$("saleHeader").value.trim(), dates=$("saleDates").value.trim();
+  const m1=$("promoMain1").value.trim(), m2=$("promoMain2").value.trim();
+  const badge=$("promoBadge").value.trim(), sub=$("subcopy").value.trim();
+  const cx=W/2, dark="#141414";
+  const headerColor = hexLum(p.bg)<0.55 ? "#ffffff" : "#141414";
+  const cardFill="#f3f1ec";
+  const cardX0=W*0.085, cardX1=W*0.915, cardTop=H*0.125, cardBot=H*0.9;
+  const cardW=cardX1-cardX0, cardH=cardBot-cardTop;
+  const k=(+$("mainScale").value||100)/100, ssub=(+$("subScale").value||100)/100;
+  const mainOff=H*((+$("mainY").value||0)/100), subOff=H*((+$("subY").value||0)/100);
+
+  const defs=`<filter id="cardShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="10" stdDeviation="22" flood-color="#000" flood-opacity="0.22"/></filter>`;
+  let s=`<rect width="${W}" height="${H}" fill="${p.bg}"/>`;
+
+  // 헤더
+  if(hdr) s+=`<text x="${cx}" y="${(H*0.045).toFixed(1)}" text-anchor="middle" font-family="${FONT}" font-weight="800" font-size="${W*0.037}" letter-spacing="1" fill="${headerColor}">${esc(hdr)}</text>`;
+  if(dates) s+=`<text x="${cx}" y="${(H*0.08).toFixed(1)}" text-anchor="middle" font-family="${FONT}" font-weight="800" font-size="${W*0.037}" letter-spacing="1" fill="${headerColor}">${esc(dates)}</text>`;
+
+  // 카드
+  s+=`<g filter="url(#cardShadow)"><rect x="${cardX0}" y="${cardTop}" width="${cardW}" height="${cardH}" rx="16" fill="${cardFill}"/></g>`;
+
+  // 업로드 이미지에서 추출한 벡터 요소 스티커 — 크기·회전에 변화를 주며 산포 (텍스트 영역 회피)
+  if(state.motifs && state.motifs.length){
+    const mots=state.motifs;
+    const spots=[
+      [0.79,0.775,0.21,-8],[0.175,0.205,0.13,10],[0.845,0.225,0.12,-12],
+      [0.20,0.78,0.15,7],[0.885,0.52,0.10,14],[0.115,0.50,0.10,-10],
+    ];
+    const nPlace=Math.min(spots.length, mots.length*2+1);
+    for(let i=0;i<nPlace;i++){
+      const mo=mots[i%mots.length];
+      const [fx,fy,fs,rot]=spots[i];
+      const sz=W*fs;
+      const dw=mo.w>=mo.h ? sz : sz*mo.w/mo.h;
+      const dh=mo.w>=mo.h ? sz*mo.h/mo.w : sz;
+      const mx=W*fx, my=H*fy;
+      s+=`<g transform="rotate(${rot} ${mx.toFixed(1)} ${my.toFixed(1)})" filter="url(#cardShadow)">
+        <svg x="${(mx-dw/2).toFixed(1)}" y="${(my-dh/2).toFixed(1)}" width="${dw.toFixed(1)}" height="${dh.toFixed(1)}" viewBox="0 0 ${mo.w} ${mo.h}" preserveAspectRatio="xMidYMid meet">${mo.inner}</svg>
+      </g>`;
+    }
+  }
+
+  // 메인1 / 메인2 — 크기·위치 슬라이더 반영
+  const m1y=H*0.30+mainOff;
+  if(m1) s+=`<text x="${cx}" y="${m1y.toFixed(1)}" text-anchor="middle" font-family="${FONT}" font-weight="900" font-size="${(H*0.13*k).toFixed(1)}" fill="${dark}">${esc(m1)}</text>`;
+  // 메인2 색: 카드색과 대비가 부족하면 포인트색 → 배경색 → 검정 순으로 폴백
+  const m2col=[p.bg2,p.accent,p.bg,"#141414"].find(c=>
+    Math.abs(hexLum(c)-hexLum(cardFill))>0.22 || colorDist(hexRGB(c),hexRGB(cardFill))>150) || "#141414";
+  if(m2) s+=`<text x="${cx}" y="${(H*0.435+mainOff).toFixed(1)}" text-anchor="middle" font-family="${FONT}" font-weight="900" font-size="${(H*0.135*k).toFixed(1)}" fill="${m2col}">${esc(m2)}</text>`;
+
+  // 배지 스티커
+  if(badge) s+=`<g transform="rotate(-3 ${cx} ${(H*0.56).toFixed(1)})">${stickerText(cx, H*0.575, badge, H*0.11, p.accent, "#ffffff")}</g>`;
+
+  // 서브 — 크기·위치 슬라이더 반영
+  if(sub) s+=`<text x="${cx}" y="${(H*0.67+subOff).toFixed(1)}" text-anchor="middle" font-family="${FONT}" font-weight="700" font-size="${(W*0.037*ssub).toFixed(1)}" fill="${dark}">${esc(sub)}</text>`;
+
+  return `<defs>${defs}</defs>${s}`;
+}
+
+/* ---------- 자동 생성기 ---------- */
+function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function ring(cx,cy,r,st,sw){ return `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${r.toFixed(1)}" fill="none" stroke="${st}" stroke-width="${sw}"/>`; }
+function disc(cx,cy,r,fill){ return `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${r.toFixed(1)}" fill="${fill}"/>`; }
+function plusMark(cx,cy,r,st,sw){ return `<path d="M ${cx-r} ${cy} H ${cx+r} M ${cx} ${cy-r} V ${cy+r}" stroke="${st}" stroke-width="${sw}" stroke-linecap="round"/>`; }
+function triMark(cx,cy,r,fill,rot){ return `<path d="M 0 ${-r} L ${r*0.87} ${r*0.5} L ${-r*0.87} ${r*0.5} Z" fill="${fill}" transform="translate(${cx.toFixed(1)} ${cy.toFixed(1)}) rotate(${rot})"/>`; }
+function arcMark(cx,cy,r,a0,a1,st,sw){ const x0=cx+Math.cos(a0)*r,y0=cy+Math.sin(a0)*r,x1=cx+Math.cos(a1)*r,y1=cy+Math.sin(a1)*r,large=(a1-a0)>Math.PI?1:0; return `<path d="M ${x0.toFixed(1)} ${y0.toFixed(1)} A ${r.toFixed(1)} ${r.toFixed(1)} 0 ${large} 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="${st}" stroke-width="${sw}" stroke-linecap="round"/>`; }
+function squiggle(x,y,len,amp,st,sw){ const seg=len/6; let d=`M ${x} ${y}`; for(let i=0;i<6;i++){ const cx=x+seg*(i+0.5),ex=x+seg*(i+1); d+=` Q ${cx.toFixed(1)} ${(y+(i%2?amp:-amp)).toFixed(1)} ${ex.toFixed(1)} ${y}`; } return `<path d="${d}" fill="none" stroke="${st}" stroke-width="${sw}" stroke-linecap="round"/>`; }
+
+function renderGenerative(W,H,p,seed){
+  const rng=mulberry32((seed*2654435761)>>>0);
+  const pick=a=>a[Math.floor(rng()*a.length)];
+  const rr=(a,b)=>a+rng()*(b-a);
+  const brand=$("brand").value.trim();
+  const lines=$("headline").value.split("\n").filter(l=>l.trim()!=="");
+  const sub=$("subcopy").value.trim();
+
+  // 역할(배경/잉크/포인트/보조) — 레퍼런스가 있으면 이미지의 색 배치 그대로, 없으면 셔플
+  const ref=state.refLayout;
+  const R=ref ? {bg:p.bg, pop:p.accent, mid:p.bg2} : pick([
+    {bg:p.bg, pop:p.accent, mid:p.bg2}, {bg:p.bg2, pop:p.accent, mid:p.bg},
+    {bg:p.accent, pop:p.bg, mid:p.bg2}, {bg:"#f6f4ee", pop:p.accent, mid:p.bg},
+    {bg:"#15181f", pop:p.accent, mid:p.bg2},
+    {bg:mixHex(p.accent,"#ffffff",0.88), pop:p.accent, mid:p.bg},
+    {bg:mixHex(p.bg,"#0d0f15",0.5), pop:p.accent, mid:p.bg2},
+  ]);
+  const bgDark=hexLum(R.bg)<0.52, ink=bgDark?"#ffffff":"#141414", inkSoft=bgDark?"rgba(255,255,255,.82)":"rgba(20,20,20,.66)";
+  const soft=t=>mixHex(pick([R.pop,R.mid]), R.bg, t);   // 배경에 녹아드는 은은한 톤
+  let defs="", s=`<rect width="${W}" height="${H}" fill="${R.bg}"/>`;
+
+  // --- 배경 스타일 --- 심플 비중 높게 (실무 SNS 템플릿은 대부분 절제된 배경) + 아치·코너·대각·하프톤 추가
+  const bgStyle = ref
+    ? pick(ref.bgStyle==="gradient" ? ["gradient","gradient","solid","arch"]
+         : ref.bgStyle==="busy"     ? ["dots","halftone","stripes","confetti"]
+         :                            ["solid","solid","arch","corner","diag","blobs"])
+    : pick(["solid","solid","solid","gradient","gradient","blobs","stripes","dots","confetti","arcs","arch","arch","corner","corner","diag","halftone"]);
+  if(bgStyle==="gradient"){ const a=pick([["0","0","1","1"],["0","0","1","0"],["0","1","1","0"]]);
+    defs+=`<linearGradient id="gg" x1="${a[0]}" y1="${a[1]}" x2="${a[2]}" y2="${a[3]}"><stop offset="0" stop-color="${R.bg}"/><stop offset="1" stop-color="${R.mid}"/></linearGradient>`;
+    s=`<rect width="${W}" height="${H}" fill="url(#gg)"/>`;
+  } else if(bgStyle==="blobs"){ for(let i=0;i<3;i++){ s+=`<ellipse cx="${rr(0,W).toFixed(0)}" cy="${rr(0,H).toFixed(0)}" rx="${rr(W*0.24,W*0.5).toFixed(0)}" ry="${rr(W*0.22,W*0.44).toFixed(0)}" fill="${pick([R.pop,R.mid])}" opacity="0.1"/>`; } }
+  else if(bgStyle==="stripes"){ const sw=rr(W*0.02,W*0.05); defs+=`<pattern id="st" width="${(sw*2).toFixed(1)}" height="${(sw*2).toFixed(1)}" patternTransform="rotate(${pick([30,45,-30,60])})" patternUnits="userSpaceOnUse"><rect width="${(sw*2).toFixed(1)}" height="${(sw*2).toFixed(1)}" fill="${R.bg}"/><rect width="${sw.toFixed(1)}" height="${(sw*2).toFixed(1)}" fill="${R.mid}" opacity="0.2"/></pattern>`; s=`<rect width="${W}" height="${H}" fill="url(#st)"/>`; }
+  else if(bgStyle==="dots"){ const gap=rr(W*0.07,W*0.11); defs+=`<pattern id="dt" width="${gap.toFixed(1)}" height="${gap.toFixed(1)}" patternUnits="userSpaceOnUse"><circle cx="${(gap/2).toFixed(1)}" cy="${(gap/2).toFixed(1)}" r="${(gap*0.1).toFixed(1)}" fill="${bgDark?'#ffffff':R.mid}" opacity="0.2"/></pattern>`; s+=`<rect width="${W}" height="${H}" fill="url(#dt)"/>`; }
+  else if(bgStyle==="confetti"){ for(let i=0;i<22;i++){ const cx=rr(0,W),cy=rr(0,H),c=pick([R.pop,R.mid,ink]),t=Math.floor(rng()*3); if(t===0) s+=disc(cx,cy,rr(4,10),c); else if(t===1) s+=triMark(cx,cy,rr(6,12),c,rr(0,360)); else s+=`<rect x="${cx.toFixed(1)}" y="${cy.toFixed(1)}" width="${rr(8,16).toFixed(1)}" height="${rr(5,8).toFixed(1)}" fill="${c}" transform="rotate(${rr(0,360).toFixed(0)} ${cx.toFixed(1)} ${cy.toFixed(1)})" opacity="0.7"/>`; } }
+  else if(bgStyle==="arcs"){ const corner=pick([[0,0],[W,0],[0,H],[W,H]]); for(let i=1;i<=4;i++) s+=ring(corner[0],corner[1],W*0.16*i, i%2?R.pop:R.mid, 5); }
+  else if(bgStyle==="arch"){ // 상단 아치 (모던 SNS 단골 형태)
+    const aw=rr(W*0.55,W*0.78), ax=W/2, top=rr(H*0.1,H*0.22);
+    s+=`<path d="M ${(ax-aw/2).toFixed(1)} ${H} L ${(ax-aw/2).toFixed(1)} ${(top+aw/2).toFixed(1)} A ${(aw/2).toFixed(1)} ${(aw/2).toFixed(1)} 0 0 1 ${(ax+aw/2).toFixed(1)} ${(top+aw/2).toFixed(1)} L ${(ax+aw/2).toFixed(1)} ${H} Z" fill="${soft(0.78)}"/>`;
+  }
+  else if(bgStyle==="corner"){ // 마주보는 모서리 원형 블록
+    const c=pick([[0,0],[W,0],[0,H],[W,H]]); const r=rr(W*0.32,W*0.5);
+    s+=`<circle cx="${c[0]}" cy="${c[1]}" r="${r.toFixed(1)}" fill="${soft(0.72)}"/>`;
+    s+=`<circle cx="${W-c[0]}" cy="${H-c[1]}" r="${(r*0.55).toFixed(1)}" fill="${soft(0.85)}"/>`;
+  }
+  else if(bgStyle==="diag"){ // 대각 컬러 밴드
+    s+=rng()<0.5
+      ? `<path d="M 0 ${(H*0.58).toFixed(0)} L ${W} ${(H*0.8).toFixed(0)} L ${W} ${H} L 0 ${H} Z" fill="${soft(0.75)}"/>`
+      : `<path d="M 0 0 L ${W} 0 L ${W} ${(H*0.28).toFixed(0)} L 0 ${(H*0.46).toFixed(0)} Z" fill="${soft(0.75)}"/>`;
+  }
+  else if(bgStyle==="halftone"){ // 코너 하프톤 도트
+    const c=pick([[W*0.9,H*0.1],[W*0.1,H*0.9],[W*0.9,H*0.9],[W*0.1,H*0.1]]);
+    const dirx=c[0]<W/2?1:-1, diry=c[1]<H/2?1:-1, gap=W*0.034;
+    for(let iy=0;iy<7;iy++) for(let ix=0;ix<7;ix++){
+      const d0=Math.hypot(ix,iy); if(d0>6.4) continue;
+      s+=`<circle cx="${(c[0]+dirx*ix*gap).toFixed(1)}" cy="${(c[1]+diry*iy*gap).toFixed(1)}" r="${(W*0.011*(1-d0/8)).toFixed(1)}" fill="${bgDark?'#ffffff':R.mid}" opacity="0.5"/>`;
+    }
+  }
+
+  // --- 헤드라인 배치 & 크기 (한글 전각 폭 기준으로 넘침 방지) ---
+  const maxW1=Math.max(...lines.map(l=>textW(l,1)), 0.1);
+  // 레퍼런스가 있으면 이미지에서 텍스트·소재가 몰린 위치와 같은 곳에 헤드라인 배치
+  const layout = ref
+    ? (ref.anchorLayout==="center"
+        ? pick(["center","centerPanel","hero","quote","echo","badge","splitBand","stackTags"])
+        : ref.anchorLayout==="topLeft" ? pick(["topLeft","topLeft","editorial","sideBar"]) : pick(["lowerLeft","lowerLeft","editorial","splitBand"]))
+    : pick(["center","topLeft","lowerLeft","topRight","lowerRight","centerPanel","editorial","editorial","hero","hero","quote","splitBand","splitBand","sideBar","echo","stackTags","stackTags","badge"]);
+  const isEd=layout==="editorial", isHero=layout==="hero", isQuote=layout==="quote";
+  const isBand=layout==="splitBand", isBar=layout==="sideBar", isBadge=layout==="badge";
+  let base=(lines.length>=3?H*0.1:lines.length===2?H*0.14:H*0.175);
+  if(isQuote) base*=0.82;
+  if(layout==="stackTags") base*=0.92;
+  base=Math.min(base, (W*0.84)/maxW1);
+  if(isBar) base=Math.min(base, (W*0.66)/maxW1);
+  if(isBadge) base=Math.min(base, (W*0.5)/maxW1);
+  base*=(+$("mainScale").value||100)/100;   // 크기 슬라이더(%) 반영
+  const lh=base*1.2, blockH=lines.length*lh;
+  const bandTop = isBand && rng()<0.4;
+  const barW=W*0.15;
+  let anchor="middle", tx=W/2, topY;
+  if(layout==="topLeft"){ anchor="start"; tx=W*0.09; topY=H*0.16; }
+  else if(layout==="lowerLeft"){ anchor="start"; tx=W*0.09; topY=H*0.82-blockH; }
+  else if(layout==="topRight"){ anchor="end"; tx=W*0.91; topY=H*0.16; }
+  else if(layout==="lowerRight"){ anchor="end"; tx=W*0.91; topY=H*0.82-blockH; }
+  else if(isEd){ anchor="start"; tx=W*0.1; topY=(H-blockH)/2-H*0.015; }
+  else if(isBand){ topY=(bandTop?H*0.32:0)+((H*0.68)-blockH)/2+H*0.02; }
+  else if(isBar){ anchor="start"; tx=barW+W*0.07; topY=(H-blockH)/2; }
+  else { topY=(H-blockH)/2; }
+  // 위치·크기 슬라이더 반영 (메인은 topY 이동, 서브는 원위치 기준 별도 이동)
+  const mainOff=H*((+$("mainY").value||0)/100), subOff=H*((+$("subY").value||0)/100), ssub=(+$("subScale").value||100)/100;
+  const topY0=topY; topY+=mainOff;
+
+  // --- 레이아웃 구조물 (패널/밴드/사이드바/배지 원/에코 타이포) ---
+  const onPanel=layout==="centerPanel";
+  let panelCol=null, bandCol=null, bandInk=null, badgeFill=null, badgeInk=null, badgeCy=0;
+  const badgeR=W*0.36;
+  if(onPanel){ const pw=W*0.86,ph=blockH+H*0.14,px=(W-pw)/2,py=topY-H*0.07;
+    panelCol=pick(["#ffffff","#f6f4ee",R.mid]);
+    s+=`<rect x="${px.toFixed(0)}" y="${py.toFixed(0)}" width="${pw.toFixed(0)}" height="${ph.toFixed(0)}" rx="${(H*0.028).toFixed(0)}" fill="${panelCol}"/>`; }
+  if(isBand){
+    bandCol=pick([R.pop,R.mid]); bandInk=hexLum(bandCol)<0.5?"#ffffff":"#141414";
+    s+=`<rect x="0" y="${bandTop?0:(H*0.68).toFixed(1)}" width="${W}" height="${(H*0.32).toFixed(1)}" fill="${bandCol}"/>`;
+  }
+  if(isBar){
+    bandCol=pick([R.pop,R.mid]); bandInk=hexLum(bandCol)<0.5?"#ffffff":"#141414";
+    s+=`<rect width="${barW.toFixed(1)}" height="${H}" fill="${bandCol}"/>`;
+  }
+  if(isBadge){
+    badgeFill=pick([R.pop,"#ffffff",R.mid!==R.bg?R.mid:R.pop]);
+    badgeInk=hexLum(badgeFill)<0.5?"#ffffff":"#141414";
+    badgeCy=topY+blockH/2-base*0.15;
+    s+=`<circle cx="${W/2}" cy="${badgeCy.toFixed(1)}" r="${badgeR.toFixed(1)}" fill="${badgeFill}"/>
+        <circle cx="${W/2}" cy="${badgeCy.toFixed(1)}" r="${(badgeR*1.07).toFixed(1)}" fill="none" stroke="${badgeFill}" stroke-width="2.5" stroke-dasharray="3 12" stroke-linecap="round"/>`;
+  }
+  if(layout==="echo"){ // 헤드라인 첫 줄을 대형 아웃라인으로 뒤에 배치
+    const big=lines[0]||brand||"", ebase=Math.min(base*2.1, (W*0.98)/Math.max(textW(big,1),0.1));
+    if(big) s+=`<text x="${W/2}" y="${(topY+blockH*0.3).toFixed(1)}" text-anchor="middle" font-family="${FONT}" font-weight="900" font-size="${ebase.toFixed(1)}" fill="none" stroke="${ink}" stroke-width="2" opacity="0.13">${esc(big)}</text>`;
+  }
+  const panelDark = onPanel && hexLum(panelCol)<0.5;
+  const surfInk = isBadge ? badgeInk : onPanel ? (panelDark?"#ffffff":"#141414") : ink;
+  const subCol = isBand ? bandInk : onPanel ? (panelDark?"rgba(255,255,255,.78)":"#555555") : inkSoft;
+
+  // 타이포 처리 (정보성·구조형 레이아웃은 정제된 처리만)
+  const treat=(isEd||isQuote) ? pick(["plain","plain","colorpop","underline"])
+    : isBadge ? pick(["plain","plain","shadow","outline"])
+    : pick(["plain","plain","sticker","shadow","outline","highlight","colorpop","gradpop","underline"]);
+  if(treat==="gradpop") defs+=`<linearGradient id="tg" x1="0" y1="0" x2="1" y2="0.4"><stop offset="0" stop-color="${R.pop}"/><stop offset="1" stop-color="${bgDark?'#ffffff':(R.mid!==R.bg?R.mid:'#141414')}"/></linearGradient>`;
+  const drawLine=(ln,i)=>{
+    const y=topY+lh*(i+0.82), x=tx, lw=textW(ln,base);
+    const hx = anchor==="middle" ? x-lw/2 : anchor==="end" ? x-lw : x;
+    const common=`font-family="${FONT}" font-weight="${isQuote?700:900}" font-size="${base.toFixed(1)}" text-anchor="${anchor}"`;
+    if(treat==="sticker") return stickerText(x, y, ln, base, R.pop, "#ffffff", anchor);
+    if(treat==="shadow") return `<text x="${(x+base*0.04).toFixed(1)}" y="${(y+base*0.05).toFixed(1)}" ${common} fill="rgba(0,0,0,.25)">${esc(ln)}</text><text x="${x}" y="${y}" ${common} fill="${surfInk}">${esc(ln)}</text>`;
+    if(treat==="outline") return `<text x="${x}" y="${y}" ${common} fill="none" stroke="${surfInk}" stroke-width="${(base*0.03).toFixed(1)}">${esc(ln)}</text>`;
+    if(treat==="highlight") return `<rect x="${(hx-base*0.12).toFixed(1)}" y="${(y-base*0.8).toFixed(1)}" width="${(lw+base*0.24).toFixed(1)}" height="${(base*1.04).toFixed(1)}" rx="${(base*0.12).toFixed(1)}" fill="${R.pop}"/><text x="${x}" y="${y}" ${common} fill="${hexLum(R.pop)<0.5?'#fff':'#141414'}">${esc(ln)}</text>`;
+    if(treat==="colorpop") return `<text x="${x}" y="${y}" ${common} fill="${i===lines.length-1?R.pop:surfInk}">${esc(ln)}</text>`;
+    if(treat==="gradpop") return `<text x="${x}" y="${y}" ${common} fill="url(#tg)">${esc(ln)}</text>`;
+    if(treat==="underline"){
+      const un=i===lines.length-1 ? squiggle(hx, y+base*0.22, lw, base*0.07, R.pop, Math.max(4,base*0.05)) : "";
+      return `<text x="${x}" y="${y}" ${common} fill="${surfInk}">${esc(ln)}</text>`+un; }
+    return `<text x="${x}" y="${y}" ${common} fill="${surfInk}">${esc(ln)}</text>`;
+  };
+  let head;
+  if(layout==="stackTags"){ // 줄마다 태그 박스 — 계단식 오프셋 + 살짝 회전
+    head=lines.map((ln,i)=>{
+      const lw=textW(ln,base), y=topY+lh*(i+0.82);
+      const off=(lines.length>1 ? (i%2?-1:1)*W*0.03 : 0), rot=(i%2?1.8:-1.8);
+      const bx=tx+off-lw/2-base*0.14;
+      const bfill=i%2 ? (bgDark?"#ffffff":"#141414") : R.pop;
+      const bink=hexLum(bfill)<0.5?"#ffffff":"#141414";
+      return `<g transform="rotate(${rot} ${(tx+off).toFixed(1)} ${(y-base*0.3).toFixed(1)})"><rect x="${bx.toFixed(1)}" y="${(y-base*0.8).toFixed(1)}" width="${(lw+base*0.28).toFixed(1)}" height="${(base*1.06).toFixed(1)}" rx="${(base*0.14).toFixed(1)}" fill="${bfill}"/><text x="${(tx+off).toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" font-family="${FONT}" font-weight="900" font-size="${base.toFixed(1)}" fill="${bink}">${esc(ln)}</text></g>`;
+    }).join("");
+  } else {
+    head=lines.map(drawLine).join("");
+  }
+
+  // 인용문 스타일: 큰 따옴표 장식 + 하단 서명
+  if(isQuote) head=`<text x="${tx}" y="${(topY-H*0.03).toFixed(1)}" text-anchor="middle" font-family="Georgia,serif" font-weight="900" font-size="${(base*1.6).toFixed(1)}" fill="${R.pop}">“</text>`+head;
+
+  // 아이브로우(상단 라벨)·브랜드
+  const ebInk=onPanel?R.pop:(bgDark?R.pop:ink);
+  if(brand){
+    if(isEd){ // 카드뉴스식: 포인트 사각 + 라벨 (좌상단)
+      head=`<rect x="${tx.toFixed(1)}" y="${(H*0.085).toFixed(1)}" width="${(base*0.32).toFixed(1)}" height="${(base*0.32).toFixed(1)}" fill="${R.pop}"/>`+
+           `<text x="${(tx+base*0.5).toFixed(1)}" y="${(H*0.085+base*0.28).toFixed(1)}" font-family="${FONT}" font-weight="700" font-size="${(base*0.24).toFixed(1)}" letter-spacing="2" fill="${ink}">${esc(brand)}</text>`+head;
+    } else if(isHero){ // 필(pill) 아이브로우 (중앙 상단)
+      const ebs=base*0.2, ew=textW(brand,ebs)+ebs*1.6, ey=topY-H*0.055;
+      head=`<rect x="${(tx-ew/2).toFixed(1)}" y="${(ey-ebs*1.05).toFixed(1)}" width="${ew.toFixed(1)}" height="${(ebs*1.8).toFixed(1)}" rx="${(ebs*0.9).toFixed(1)}" fill="none" stroke="${ebInk}" stroke-width="2.5"/>`+
+           `<text x="${tx}" y="${(ey+ebs*0.28).toFixed(1)}" text-anchor="middle" font-family="${FONT}" font-weight="700" font-size="${ebs.toFixed(1)}" letter-spacing="3" fill="${ebInk}">${esc(brand)}</text>`+head;
+    } else if(isQuote){ // 하단 서명
+      head+=`<text x="${tx}" y="${(H*0.9).toFixed(1)}" text-anchor="middle" font-family="${FONT}" font-weight="700" font-size="${(base*0.22).toFixed(1)}" letter-spacing="3" fill="${ebInk}">— ${esc(brand)} —</text>`;
+    } else if(isBar){ // 사이드바 안 세로 브랜드
+      head=`<text transform="rotate(-90 ${(barW/2).toFixed(1)} ${(H/2).toFixed(1)})" x="${(barW/2).toFixed(1)}" y="${(H/2+base*0.09).toFixed(1)}" text-anchor="middle" font-family="${FONT}" font-weight="800" font-size="${(base*0.26).toFixed(1)}" letter-spacing="6" fill="${bandInk}">${esc(brand)}</text>`+head;
+    } else if(isBadge){ // 배지 원 안 상단 라벨
+      head=`<text x="${tx}" y="${(badgeCy-badgeR*0.55).toFixed(1)}" text-anchor="middle" font-family="${FONT}" font-weight="700" font-size="${(base*0.22).toFixed(1)}" letter-spacing="3" fill="${badgeInk}">${esc(brand)}</text>`+head;
+    } else {
+      const brandY = (layout==="topLeft"||layout==="topRight")?H*0.09:topY-H*0.05;
+      head=`<text x="${tx}" y="${brandY.toFixed(1)}" text-anchor="${anchor}" font-family="${FONT}" font-weight="700" font-size="${(base*0.24).toFixed(1)}" letter-spacing="2" fill="${ebInk}">${esc(brand)}</text>`+head;
+    }
+  }
+
+  // 서브: 에디토리얼·히어로는 CTA 필 버튼 / 밴드는 밴드 안 / 배지는 원 아래 / 그 외 텍스트
+  if(sub){
+    let sy=topY0+blockH+H*0.055+subOff;
+    if(isBand) sy=(bandTop?H*0.16:H*0.84)+subOff;
+    else if(isBadge) sy=(topY0+blockH/2-base*0.15)+badgeR+H*0.055+subOff;
+    const sz=base*0.26*ssub;
+    if(isEd||isHero){
+      const bw=textW(sub,sz)+sz*2.2, bh=sz*2.1;
+      const bx=anchor==="middle"?tx-bw/2:tx;
+      const btnFill=onPanel?R.pop:(bgDark?"#ffffff":R.pop);
+      const btnInk=hexLum(btnFill)<0.5?"#ffffff":"#141414";
+      head+=`<rect x="${bx.toFixed(1)}" y="${(sy-bh*0.68).toFixed(1)}" width="${bw.toFixed(1)}" height="${bh.toFixed(1)}" rx="${(bh/2).toFixed(1)}" fill="${btnFill}"/><text x="${(anchor==="middle"?tx:bx+bw/2).toFixed(1)}" y="${sy.toFixed(1)}" text-anchor="middle" font-family="${FONT}" font-weight="700" font-size="${sz.toFixed(1)}" fill="${btnInk}">${esc(sub)}</text>`;
+    } else if(isBand){
+      head+=`<text x="${(W/2).toFixed(1)}" y="${sy.toFixed(1)}" text-anchor="middle" font-family="${FONT}" font-weight="700" font-size="${sz.toFixed(1)}" fill="${bandInk}">${esc(sub)}  →</text>`;
+    } else {
+      head+=`<text x="${tx}" y="${sy.toFixed(1)}" text-anchor="${anchor}" font-family="${FONT}" font-weight="600" font-size="${sz.toFixed(1)}" fill="${subCol}">${esc(sub)}</text>`;
+    }
+  }
+
+  // 에디토리얼 푸터: 가는 룰 + 진행 화살표 (카드뉴스 감성)
+  if(isEd){
+    head+=`<line x1="${tx}" y1="${(H*0.9).toFixed(1)}" x2="${(W*0.91).toFixed(1)}" y2="${(H*0.9).toFixed(1)}" stroke="${inkSoft}" stroke-width="1.5"/>
+      <text x="${(W*0.91).toFixed(1)}" y="${(H*0.885).toFixed(1)}" text-anchor="end" font-family="${FONT}" font-weight="600" font-size="${(base*0.18).toFixed(1)}" fill="${inkSoft}">→</text>`;
+  }
+
+  // 얇은 프레임 (간헐적 — 구조형 레이아웃·아치와 중복 회피)
+  if(!onPanel && !isBand && !isBar && !isBadge && bgStyle!=="arch" && rng()<0.22){
+    const fm=Math.min(W,H)*0.035;
+    s+=`<rect x="${fm.toFixed(1)}" y="${fm.toFixed(1)}" width="${(W-2*fm).toFixed(1)}" height="${(H-2*fm).toFixed(1)}" fill="none" stroke="${ink}" stroke-width="2" opacity="0.65"/>`;
+  }
+
+  // --- 장식: 한 종류만 사용해 통일감, 절제된 수량 ---
+  const spots=[[0.12,0.13],[0.88,0.12],[0.9,0.88],[0.11,0.87],[0.5,0.07],[0.92,0.5],[0.08,0.5],[0.5,0.93]];
+  for(let i=spots.length-1;i>0;i--){ const j=Math.floor(rng()*(i+1)); [spots[i],spots[j]]=[spots[j],spots[i]]; }
+  const decoT=Math.floor(rng()*7);
+  let nDec=pick([0,2,2,3,3,4]);
+  if(isEd||isQuote||isBadge) nDec=Math.min(nDec,2);
+  let dec="";
+  for(let i=0;i<nDec;i++){ const sp=spots[i]; const cx=sp[0]*W+rr(-W*0.02,W*0.02), cy=sp[1]*H+rr(-H*0.015,H*0.015);
+    const col=pick([R.pop,R.mid,ink]), r=rr(W*0.014,W*0.034);
+    if(decoT===0) dec+=star5(cx,cy,r,col,Math.max(2.5,r*0.12));
+    else if(decoT===1) dec+=sparkle4(cx,cy,r,col);
+    else if(decoT===2) dec+=ring(cx,cy,r,col,Math.max(2.5,r*0.16));
+    else if(decoT===3) dec+=plusMark(cx,cy,r*0.8,col,Math.max(2.5,r*0.16));
+    else if(decoT===4) dec+=arcMark(cx,cy,r,rr(0,3),rr(3.2,6),col,Math.max(2.5,r*0.16));
+    else if(decoT===5) dec+=squiggle(cx-r,cy,r*2,r*0.4,col,Math.max(2.5,r*0.14));
+    else dec+=disc(cx,cy,r*0.5,col);
+  }
+
+  // 종이 질감 그레인 (은은하게, 30% 확률)
+  let grain="";
+  if(rng()<0.3){
+    const gv=bgDark?1:0;
+    defs+=`<filter id="grain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="matrix" values="0 0 0 0 ${gv}  0 0 0 0 ${gv}  0 0 0 0 ${gv}  0.6 0.6 0.6 0 0"/></filter>`;
+    grain=`<rect width="${W}" height="${H}" filter="url(#grain)" opacity="0.05"/>`;
+  }
+
+  return `<defs>${defs}</defs>${s}${dec}${head}${grain}`;
+}
+
+function buildSVG(){
+  const [W,H]=getSize();
+  const p=getPalette();
+  const inner = state.mode==="coupon" ? renderCoupon(W,H,p)
+              : state.mode==="promo" ? renderPromo(W,H,p)
+              : state.mode==="gen" ? renderGenerative(W,H,p,state.seed)
+              : renderBanner(W,H,p);
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${inner}</svg>`;
+}
+function render(){
+  $("headSizeVal").textContent=$("headSize").value;
+  $("mainScaleVal").textContent=$("mainScale").value+"%";
+  $("mainYVal").textContent=$("mainY").value;
+  $("subScaleVal").textContent=$("subScale").value+"%";
+  $("subYVal").textContent=$("subY").value;
+  $("imgOverlayVal").textContent=$("imgOverlay").value+"%";
+  const svg=buildSVG();
+  $("preview").innerHTML=svg;
+  return svg;
+}
+
+/* ---------- 다운로드 ---------- */
+function fileBase(){
+  const b=($("brand").value.trim()||"design").replace(/[^\w가-힣-]+/g,"_");
+  return b+"_"+state.mode+"_"+state.size;
+}
+function downloadSVG(){
+  const blob=new Blob([buildSVG()],{type:"image/svg+xml;charset=utf-8"});
+  triggerDownload(URL.createObjectURL(blob), fileBase()+".svg");
+}
+function downloadPNG(scale){ downloadRaster(scale,"png"); }
+function downloadJPG(scale){ downloadRaster(scale,"jpg"); }
+function downloadRaster(scale,fmt){
+  const svg=buildSVG(); const [W,H]=getSize();
+  const img=new Image();
+  img.onload=()=>{
+    const c=document.createElement("canvas");
+    c.width=W*scale; c.height=H*scale;
+    const ctx=c.getContext("2d");
+    if(fmt==="jpg"){ ctx.fillStyle="#ffffff"; ctx.fillRect(0,0,c.width,c.height); }   // JPG는 투명도 없음
+    ctx.drawImage(img,0,0,c.width,c.height);
+    const mime=fmt==="jpg"?"image/jpeg":"image/png";
+    triggerDownload(c.toDataURL(mime,0.92), fileBase()+"@"+scale+"x."+fmt);
+  };
+  img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);
+}
+function triggerDownload(href,name){
+  const a=document.createElement("a"); a.href=href; a.download=name;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* ---------- 이미지 업로드 ---------- */
+const drop=$("drop"), fileInput=$("fileInput");
+drop.onclick=()=>fileInput.click();
+drop.ondragover=e=>{e.preventDefault(); drop.classList.add("hover");};
+drop.ondragleave=()=>drop.classList.remove("hover");
+drop.ondrop=e=>{e.preventDefault(); drop.classList.remove("hover"); if(e.dataTransfer.files[0]) loadImage(e.dataTransfer.files[0]);};
+fileInput.onchange=e=>{ if(e.target.files[0]) loadImage(e.target.files[0]); };
+function loadImage(file){
+  const r=new FileReader();
+  r.onload=()=>{
+    const im=new Image();
+    im.onload=()=>{
+      state.imgW=im.naturalWidth; state.imgH=im.naturalHeight;
+      $("thumbImg").src=r.result; $("thumb").style.display="flex";
+      if(state.mode==="promo" || state.mode==="gen"){
+        // 사진을 그대로 넣지 않고, 이미지의 색·레이아웃을 분석해 비슷한 분위기의 벡터 디자인으로 반영
+        const roles=assignRoles(extractColors(im));
+        applyRolesAsPalette(roles);
+        state.refLayout=analyzeLayoutStats(im);
+        state.image=null;
+        if(state.mode==="promo"){
+          // 이미지 속 개별 요소를 추출해 벡터 스티커로 배치 (분리가 안 되면 이미지 전체를 스티커 1개로)
+          let mots=extractMotifs(im);
+          if(!mots.length) mots=[traceImage(im, 64, 0)];
+          state.motifs=mots;
+          state.trace=null;
+          $("imgFieldWrap").style.display="none"; $("imgFxWrap").style.display="none"; $("imgOpacityWrap").style.display="none";
+        } else {
+          state.trace=null;
+          $("imgFieldWrap").style.display="none"; $("imgFxWrap").style.display="none"; $("imgOpacityWrap").style.display="none";
+        }
+      } else {
+        state.image=r.result;
+        state.trace=null;   // 래스터 이미지와 벡터 그림은 상호배타
+        $("imgFieldWrap").style.display="block"; $("imgFxWrap").style.display="block"; $("imgOpacityWrap").style.display="block";
+      }
+      syncChips(); render();
+    };
+    im.src=r.result;
+  };
+  r.readAsDataURL(file);
+}
+function clearImage(){
+  state.image=null; state.trace=null; state.refLayout=null; state.motifs=null;
+  $("thumb").style.display="none"; fileInput.value="";
+  $("imgFieldWrap").style.display="none"; $("imgFxWrap").style.display="none"; $("imgOpacityWrap").style.display="none";
+  render();
+}
+
+/* ---------- 레퍼런스 스타일 추출 ---------- */
+const refDrop=$("refDrop"), refInput=$("refInput");
+refDrop.onclick=()=>refInput.click();
+refDrop.ondragover=e=>{e.preventDefault(); refDrop.classList.add("hover");};
+refDrop.ondragleave=()=>refDrop.classList.remove("hover");
+refDrop.ondrop=e=>{e.preventDefault(); refDrop.classList.remove("hover"); if(e.dataTransfer.files[0]) analyzeRef(e.dataTransfer.files[0]);};
+refInput.onchange=e=>{ if(e.target.files[0]) analyzeRef(e.target.files[0]); };
+
+function analyzeRef(file){
+  const r=new FileReader();
+  r.onload=()=>{
+    const im=new Image();
+    im.onload=()=>{
+      refImgEl=im;
+      $("refThumbImg").src=r.result; $("refThumb").style.display="flex";
+      $("traceWrap").style.display="block";
+      const colors=extractColors(im);      // 대표 색 배열 (빈도순)
+      const roles=assignRoles(colors);     // 배경/글자/포인트 등 역할 배정
+      renderRefSwatches(colors);
+      // 옵션에 따라 적용
+      if($("refApplyColors").classList.contains("on")){
+        applyRolesAsPalette(roles);
+      }
+      state.refLayout=analyzeLayoutStats(im);   // 자동생성 모드가 레이아웃 참고
+      if($("refApplyRatio").classList.contains("on")){
+        applyRatio(im.naturalWidth, im.naturalHeight);
+      }
+      $("refPaletteWrap").style.display="block"; $("refOptWrap").style.display="block";
+      syncChips(); render();
+    };
+    im.src=r.result;
+  };
+  r.readAsDataURL(file);
+}
+
+// 이미지 축소 후 색상 양자화 → 빈도순 대표색
+function extractColors(im){
+  const cv=document.createElement("canvas");
+  const scale=Math.min(1, 80/Math.max(im.naturalWidth, im.naturalHeight));
+  cv.width=Math.max(1,Math.round(im.naturalWidth*scale));
+  cv.height=Math.max(1,Math.round(im.naturalHeight*scale));
+  const ctx=cv.getContext("2d");
+  ctx.drawImage(im,0,0,cv.width,cv.height);
+  const data=ctx.getImageData(0,0,cv.width,cv.height).data;
+  const buckets={};
+  for(let i=0;i<data.length;i+=4){
+    const a=data[i+3]; if(a<128) continue;
+    const r=data[i],g=data[i+1],b=data[i+2];
+    const key=(r>>4)+"-"+(g>>4)+"-"+(b>>4);
+    if(!buckets[key]) buckets[key]={r:0,g:0,b:0,n:0};
+    const bk=buckets[key]; bk.r+=r; bk.g+=g; bk.b+=b; bk.n++;
+  }
+  let arr=Object.values(buckets).map(bk=>({
+    r:Math.round(bk.r/bk.n), g:Math.round(bk.g/bk.n), b:Math.round(bk.b/bk.n), n:bk.n
+  })).sort((x,y)=>y.n-x.n);
+  // 너무 비슷한 색 병합
+  const out=[];
+  for(const c of arr){
+    if(out.every(o=>colorDist(o,c)>40)) out.push(c);
+    if(out.length>=8) break;
+  }
+  return out.map(c=>({...c, hex:rgbToHex(c.r,c.g,c.b), ...rgbToHsl(c.r,c.g,c.b)}));
+}
+function colorDist(a,b){ return Math.abs(a.r-b.r)+Math.abs(a.g-b.g)+Math.abs(a.b-b.b); }
+function rgbToHex(r,g,b){ return "#"+[r,g,b].map(v=>v.toString(16).padStart(2,"0")).join(""); }
+function luminance(c){ return (0.299*c.r+0.587*c.g+0.114*c.b)/255; }
+function rgbToHsl(r,g,b){
+  r/=255; g/=255; b/=255;
+  const mx=Math.max(r,g,b),mn=Math.min(r,g,b); let h=0,s=0,l=(mx+mn)/2;
+  if(mx!==mn){ const d=mx-mn; s=l>0.5? d/(2-mx-mn):d/(mx+mn);
+    if(mx===r) h=(g-b)/d+(g<b?6:0); else if(mx===g) h=(b-r)/d+2; else h=(r-g)/d+4; h/=6; }
+  return {h:h*360,s,l};
+}
+
+// 대표색 → 역할(bg, bg2, fg, sub, accent)
+function assignRoles(colors){
+  if(!colors.length) return {bg:"#f7f5f0",bg2:"#f7f5f0",fg:"#111",sub:"#555",accent:"#ff5a2f"};
+  const bg=colors[0];
+  const bgLum=luminance(bg);
+  const dark=bgLum<0.5;
+  // 포인트: 채도 높고 배경과 충분히 다른 색
+  const accent=[...colors].sort((a,b)=>(b.s*0.7+colorDist(b,bg)/765*0.3)-(a.s*0.7+colorDist(a,bg)/765*0.3))
+                          .find(c=>colorDist(c,bg)>60) || colors[colors.length-1];
+  // 두 번째 배경(그라디언트용): 배경과 가까운 계열 중 빈도 2위
+  const bg2 = colors.find((c,i)=>i>0 && colorDist(c,bg)<160 && c!==accent) || bg;
+  const fg = dark ? "#ffffff" : "#141414";
+  const sub = dark ? "#d8dbe6" : "#5a5a5a";
+  return { bg:bg.hex, bg2:bg2.hex, fg, sub, accent:accent.hex };
+}
+
+// 추출된 역할 색을 커스텀 팔레트로 적용
+function applyRolesAsPalette(roles){
+  state.customPalette={ name:"레퍼런스", ...roles };
+  state.useCustomColor=true;
+  $("customColorField").classList.remove("hidden");
+  syncCustomInputs();
+}
+
+/* ---------- 레퍼런스 레이아웃 분석 ---------- */
+// 이미지를 3x3 셀로 나눠 엣지 밀도(디테일)를 계산 → 텍스트·소재가 몰린 위치와 배경 스타일을 추정
+function analyzeLayoutStats(im){
+  const gw=48, gh=Math.max(8, Math.min(96, Math.round(gw*im.naturalHeight/im.naturalWidth)));
+  const cv=document.createElement("canvas"); cv.width=gw; cv.height=gh;
+  const ctx=cv.getContext("2d"); ctx.drawImage(im,0,0,gw,gh);
+  const d=ctx.getImageData(0,0,gw,gh).data;
+  const lum=new Float32Array(gw*gh);
+  for(let i=0;i<gw*gh;i++) lum[i]=(0.299*d[i*4]+0.587*d[i*4+1]+0.114*d[i*4+2])/255;
+  const det=new Float32Array(9), cnt=new Float32Array(9);
+  for(let y=1;y<gh-1;y++) for(let x=1;x<gw-1;x++){
+    const gx=lum[y*gw+x-1]-lum[y*gw+x+1], gy=lum[(y-1)*gw+x]-lum[(y+1)*gw+x];
+    const ci=Math.min(2,Math.floor(y/gh*3))*3+Math.min(2,Math.floor(x/gw*3));
+    det[ci]+=Math.sqrt(gx*gx+gy*gy); cnt[ci]++;
+  }
+  for(let i=0;i<9;i++) if(cnt[i]) det[i]/=cnt[i];
+  // 디테일 최대 셀 → 헤드라인 배치 위치
+  let maxI=0; for(let i=1;i<9;i++) if(det[i]>det[maxI]) maxI=i;
+  const row=Math.floor(maxI/3), col=maxI%3;
+  const anchorLayout = col===0 ? (row===2?"lowerLeft":"topLeft") : "center";
+  // 배경 스타일: 전체 디테일이 높으면 패턴, 모서리 색 차가 크면 그라디언트
+  const avgDet=det.reduce((a,b)=>a+b,0)/9;
+  const px=(x,y)=>{const i=(y*gw+x)*4; return {r:d[i],g:d[i+1],b:d[i+2]};};
+  const tl=px(2,2), tr=px(gw-3,2), bl=px(2,gh-3), br=px(gw-3,gh-3);
+  const spread=Math.max(colorDist(tl,br), colorDist(tr,bl), colorDist(tl,tr), colorDist(tl,bl));
+  const bgStyle = avgDet>0.14 ? "busy" : spread>90 ? "gradient" : "solid";
+  return {anchorLayout, bgStyle, maxCell:maxI};
+}
+
+function applyRatio(w,h){
+  const maxDim=1400; const s=maxDim/Math.max(w,h);
+  state.size="custom"; $("size").value="custom";
+  $("customSizeField").classList.remove("hidden");
+  $("customW").value=Math.round(w*s); $("customH").value=Math.round(h*s);
+}
+
+function renderRefSwatches(colors){
+  const box=$("refSwatches"); box.innerHTML="";
+  colors.forEach(c=>{
+    const b=document.createElement("button");
+    b.style.background=c.hex; b.title=c.hex; b.style.width="30px"; b.style.height="30px";
+    b.onclick=()=>{
+      state.customPalette.accent=c.hex; state.useCustomColor=true;
+      $("customColorField").classList.remove("hidden"); syncCustomInputs(); syncChips(); render();
+    };
+    box.appendChild(b);
+  });
+}
+
+function syncCustomInputs(){
+  // HEX 입력행을 현재 customPalette 값으로 갱신
+  const rows=$("colorRows").children;
+  COLOR_ROLES.forEach(([key],i)=>{
+    const row=rows[i]; if(!row) return;
+    const cp=row.querySelector('input[type=color]'), tx=row.querySelector('input[type=text]');
+    cp.value=state.customPalette[key]; tx.value=state.customPalette[key].toUpperCase();
+  });
+}
+
+function clearRef(){
+  $("refThumb").style.display="none"; refInput.value=""; refImgEl=null;
+  $("refPaletteWrap").style.display="none"; $("refOptWrap").style.display="none"; $("traceWrap").style.display="none";
+  state.refLayout=null;
+  clearTrace();
+}
+
+// 적용 옵션 토글
+["refApplyColors","refApplyRatio"].forEach(id=>{
+  $(id).onclick=()=>$(id).classList.toggle("on");
+});
+
+/* ---------- 그림 벡터화 ---------- */
+function gridFromImage(im, gw){
+  const gh=Math.max(1, Math.round(gw*im.naturalHeight/im.naturalWidth));
+  const cv=document.createElement("canvas"); cv.width=gw; cv.height=gh;
+  const ctx=cv.getContext("2d"); ctx.drawImage(im,0,0,gw,gh);
+  return {gw,gh,data:ctx.getImageData(0,0,gw,gh).data};
+}
+function cellRGB(data,gw,x,y){ const i=(y*gw+x)*4; return {r:data[i],g:data[i+1],b:data[i+2],a:data[i+3]}; }
+function nearestPaletteHex(c, pal){
+  let best=pal[0], bd=Infinity;
+  for(const p of pal){ const d=(p.r-c.r)**2+(p.g-c.g)**2+(p.b-c.b)**2; if(d<bd){bd=d;best=p;} }
+  return best.hex;
+}
+function traceImage(imEl, detail, style){
+  const {gw,gh,data}=gridFromImage(imEl, detail);
+  const pal=extractColors(imEl);
+  let inner="";
+
+  if(style===0){ // 플랫 벡터: 팔레트 스냅 + 가로 런 병합
+    const idx=[];
+    for(let y=0;y<gh;y++){ idx[y]=[]; for(let x=0;x<gw;x++) idx[y][x]=nearestPaletteHex(cellRGB(data,gw,x,y),pal); }
+    const parts=[];
+    for(let y=0;y<gh;y++){ let x=0;
+      while(x<gw){ const col=idx[y][x]; let x2=x+1; while(x2<gw&&idx[y][x2]===col) x2++;
+        parts.push(`<rect x="${x}" y="${y}" width="${x2-x}" height="1" fill="${col}"/>`); x=x2; }
+    }
+    inner=`<g shape-rendering="crispEdges">${parts.join("")}</g>`;
+  } else if(style===1){ // 점묘 도트
+    const bg=pal[0]?pal[0].hex:"#ffffff"; const dots=[];
+    for(let y=0;y<gh;y++) for(let x=0;x<gw;x++){
+      const c=cellRGB(data,gw,x,y); if(c.a<128) continue;
+      const lum=(0.299*c.r+0.587*c.g+0.114*c.b)/255, rad=0.15+(1-lum)*0.42;
+      dots.push(`<circle cx="${x+0.5}" cy="${y+0.5}" r="${rad.toFixed(2)}" fill="${rgbToHex(c.r,c.g,c.b)}"/>`);
+    }
+    inner=`<rect width="${gw}" height="${gh}" fill="${bg}"/>${dots.join("")}`;
+  } else if(style===2){ // 라인 아트: 소벨 엣지
+    const lum=new Float32Array(gw*gh);
+    for(let i=0;i<gw*gh;i++) lum[i]=(0.299*data[i*4]+0.587*data[i*4+1]+0.114*data[i*4+2])/255;
+    const dark=pal.reduce((a,b)=>luminance(b)<luminance(a)?b:a).hex; const lines=[];
+    for(let y=1;y<gh-1;y++) for(let x=1;x<gw-1;x++){
+      const gx=lum[y*gw+x-1]-lum[y*gw+x+1], gy=lum[(y-1)*gw+x]-lum[(y+1)*gw+x];
+      if(Math.sqrt(gx*gx+gy*gy)>0.22) lines.push(`<rect x="${x}" y="${y}" width="1" height="1" fill="${dark}"/>`);
+    }
+    inner=`<rect width="${gw}" height="${gh}" fill="#ffffff"/><g shape-rendering="crispEdges">${lines.join("")}</g>`;
+  } else { // 픽셀 블록: 원본색 그대로
+    const parts=[];
+    for(let y=0;y<gh;y++) for(let x=0;x<gw;x++){
+      const c=cellRGB(data,gw,x,y); if(c.a<128) continue;
+      parts.push(`<rect x="${x}" y="${y}" width="1" height="1" fill="${rgbToHex(c.r,c.g,c.b)}"/>`);
+    }
+    inner=`<g shape-rendering="crispEdges">${parts.join("")}</g>`;
+  }
+  return {inner, w:gw, h:gh};
+}
+
+/* ---------- 이미지 요소 추출 ----------
+   업로드 이미지에서 배경을 판별하고, 배경과 다른 덩어리(연결 요소)들을
+   개별 벡터 스티커(다이컷 흰 테두리)로 변환한다. */
+function extractMotifs(im){
+  const gw=72, gh=Math.max(8, Math.min(120, Math.round(gw*im.naturalHeight/im.naturalWidth)));
+  const cv=document.createElement("canvas"); cv.width=gw; cv.height=gh;
+  const ctx=cv.getContext("2d"); ctx.drawImage(im,0,0,gw,gh);
+  const d=ctx.getImageData(0,0,gw,gh).data;
+  const at=(x,y)=>{const i=(y*gw+x)*4; return {r:d[i],g:d[i+1],b:d[i+2],a:d[i+3]};};
+
+  // 배경색: 테두리 픽셀의 최빈 색 버킷
+  const border={};
+  const addB=c=>{ if(c.a<128) return; const k=(c.r>>5)+","+(c.g>>5)+","+(c.b>>5);
+    const b=border[k]=border[k]||{r:0,g:0,b:0,n:0}; b.r+=c.r; b.g+=c.g; b.b+=c.b; b.n++; };
+  for(let x=0;x<gw;x++){ addB(at(x,0)); addB(at(x,gh-1)); }
+  for(let y=0;y<gh;y++){ addB(at(0,y)); addB(at(gw-1,y)); }
+  const bgB=Object.values(border).sort((a,b)=>b.n-a.n)[0];
+  if(!bgB) return [];
+  const bg={r:bgB.r/bgB.n, g:bgB.g/bgB.n, b:bgB.b/bgB.n};
+
+  // 전경 마스크 → 연결 요소 라벨링 (flood fill)
+  const fg=new Uint8Array(gw*gh), label=new Int16Array(gw*gh).fill(-1);
+  let fgTotal=0;
+  for(let y=0;y<gh;y++)for(let x=0;x<gw;x++){ const c=at(x,y); const v=(c.a>=128 && colorDist(c,bg)>70)?1:0; fg[y*gw+x]=v; fgTotal+=v; }
+  if(fgTotal>gw*gh*0.6) return [];   // 전경이 대부분 = 배경 분리 실패(사진 등) → 전체 벡터화 폴백
+  const comps=[];
+  for(let y0=0;y0<gh;y0++)for(let x0=0;x0<gw;x0++){
+    const i0=y0*gw+x0; if(!fg[i0]||label[i0]>=0) continue;
+    const id=comps.length, stack=[i0]; label[i0]=id;
+    let n=0, bx0=x0, bx1=x0, by0=y0, by1=y0;
+    while(stack.length){
+      const i=stack.pop(); n++;
+      const px=i%gw, py=(i/gw)|0;
+      if(px<bx0)bx0=px; if(px>bx1)bx1=px; if(py<by0)by0=py; if(py>by1)by1=py;
+      if(px>0    && fg[i-1] &&label[i-1]<0){ label[i-1]=id; stack.push(i-1); }
+      if(px<gw-1 && fg[i+1] &&label[i+1]<0){ label[i+1]=id; stack.push(i+1); }
+      if(py>0    && fg[i-gw]&&label[i-gw]<0){ label[i-gw]=id; stack.push(i-gw); }
+      if(py<gh-1 && fg[i+gw]&&label[i+gw]<0){ label[i+gw]=id; stack.push(i+gw); }
+    }
+    comps.push({id, n, x0:bx0, x1:bx1, y0:by0, y1:by1});
+  }
+  // 색 일관성: 일러스트 요소는 소수의 색으로 구성 (노이즈·사진 조각은 색이 넓게 퍼짐)
+  const coherent=c=>{
+    const buckets={}; let m=0;
+    for(let y=c.y0;y<=c.y1;y++)for(let x=c.x0;x<=c.x1;x++){
+      if(label[y*gw+x]!==c.id) continue;
+      const cc=at(x,y), k=(cc.r>>4)+","+(cc.g>>4)+","+(cc.b>>4);
+      buckets[k]=(buckets[k]||0)+1; m++;
+    }
+    const top=Object.values(buckets).sort((a,b)=>b-a).slice(0,3).reduce((a,b)=>a+b,0);
+    return top>=m*0.62;
+  };
+  // 경계 선명도: 요소는 주변과 경계가 뚜렷 (그라디언트에서 잘린 조각은 경계가 완만)
+  const sharpEdge=c=>{
+    let sum=0, m=0;
+    for(let y=c.y0;y<=c.y1;y++)for(let x=c.x0;x<=c.x1;x++){
+      const i=y*gw+x; if(label[i]!==c.id) continue;
+      for(const [nx,ny] of [[x-1,y],[x+1,y],[x,y-1],[x,y+1]]){
+        if(nx<0||ny<0||nx>=gw||ny>=gh) continue;
+        if(label[ny*gw+nx]===c.id) continue;
+        sum+=colorDist(at(x,y), at(nx,ny)); m++;
+      }
+    }
+    return m>0 && sum/m>=30;
+  };
+  // 노이즈(너무 작음/흩어진 형태/색 불일치)와 화면 전체(배경 구분 실패)를 걸러내고 큰 순서로 최대 4개
+  const total=gw*gh;
+  const good=comps.filter(c=>{
+    const bw=c.x1-c.x0+1, bh=c.y1-c.y0+1;
+    return c.n>total*0.01 && c.n<total*0.55 && bw<gw*0.85 && bh<gh*0.85
+        && c.n/(bw*bh)>=0.28   // 채움 비율 낮은 조각(노이즈)은 요소로 보지 않음
+        && coherent(c) && sharpEdge(c);
+  }).sort((a,b)=>b.n-a.n).slice(0,4);
+
+  const pal=extractColors(im);
+  return good.map(c=>{
+    // 원본 해상도에서 요소 영역만 잘라 재샘플 후, 마스크 셀만 그리는 다이컷 벡터화
+    const pad=1;
+    const sx=Math.max(0,(c.x0-pad)/gw), sy=Math.max(0,(c.y0-pad)/gh);
+    const sw=Math.min(1-sx,(c.x1-c.x0+1+pad*2)/gw), sh=Math.min(1-sy,(c.y1-c.y0+1+pad*2)/gh);
+    const mw=48, mh=Math.max(4, Math.min(96, Math.round(mw*(sh*im.naturalHeight)/(sw*im.naturalWidth))));
+    const mcv=document.createElement("canvas"); mcv.width=mw; mcv.height=mh;
+    const mctx=mcv.getContext("2d");
+    mctx.drawImage(im, sx*im.naturalWidth, sy*im.naturalHeight, sw*im.naturalWidth, sh*im.naturalHeight, 0,0,mw,mh);
+    const md=mctx.getImageData(0,0,mw,mh).data;
+    const mask=new Uint8Array(mw*mh);
+    for(let i=0;i<mw*mh;i++){
+      const cc={r:md[i*4],g:md[i*4+1],b:md[i*4+2],a:md[i*4+3]};
+      mask[i]=(cc.a>=128 && colorDist(cc,bg)>70)?1:0;
+    }
+    const inM=(x,y)=> x>=0&&y>=0&&x<mw&&y<mh ? mask[y*mw+x] : 0;
+    // 다이컷 흰 테두리: 마스크 1셀 팽창분
+    let edge="";
+    for(let y=0;y<mh;y++)for(let x=0;x<mw;x++){
+      if(!mask[y*mw+x] && (inM(x-1,y)||inM(x+1,y)||inM(x,y-1)||inM(x,y+1)||inM(x-1,y-1)||inM(x+1,y+1)||inM(x-1,y+1)||inM(x+1,y-1)))
+        edge+=`<rect x="${x}" y="${y}" width="1" height="1" fill="#ffffff"/>`;
+    }
+    // 본체: 팔레트 스냅 색으로 가로 런 병합
+    let body="";
+    for(let y=0;y<mh;y++){ let x=0;
+      while(x<mw){
+        if(!mask[y*mw+x]){ x++; continue; }
+        const i=(y*mw+x)*4;
+        const col=nearestPaletteHex({r:md[i],g:md[i+1],b:md[i+2]},pal);
+        let x2=x+1;
+        while(x2<mw && mask[y*mw+x2]){
+          const j=(y*mw+x2)*4;
+          if(nearestPaletteHex({r:md[j],g:md[j+1],b:md[j+2]},pal)!==col) break;
+          x2++;
+        }
+        body+=`<rect x="${x}" y="${y}" width="${x2-x}" height="1" fill="${col}"/>`;
+        x=x2;
+      }
+    }
+    return {inner:`<g shape-rendering="crispEdges">${edge}${body}</g>`, w:mw, h:mh};
+  });
+}
+
+function runTrace(){
+  if(!refImgEl) return;
+  const detail=+$("traceDetail").value, style=state.traceStyle;
+  state.trace=traceImage(refImgEl, detail, style);
+  // 벡터 그림을 이미지 소스로 사용 → 래스터 이미지와 상호배타, 배치/필터 컨트롤 노출
+  state.image=null; $("thumb").style.display="none"; fileInput.value="";
+  $("imgFieldWrap").style.display="block"; $("imgFxWrap").style.display="block"; $("imgOpacityWrap").style.display="block";
+  syncChips(); render();
+}
+function clearTrace(){
+  state.trace=null;
+  if(!state.image){ $("imgFieldWrap").style.display="none"; $("imgFxWrap").style.display="none"; $("imgOpacityWrap").style.display="none"; }
+  render();
+}
+makeChips($("traceStyles"), TRACE_STYLES, ()=>state.traceStyle, i=>{ state.traceStyle=i; if(state.trace) runTrace(); });
+$("traceDetail").addEventListener("input", ()=>$("traceDetailVal").textContent=$("traceDetail").value);
+$("traceDetail").addEventListener("change", ()=>{ if(state.trace) runTrace(); });
+$("traceBtn").onclick=runTrace;
+$("traceClear").onclick=clearTrace;
+
+/* ---------- 컨트롤 세팅 ---------- */
+function makeChips(box, arr, getIdx, setIdx){
+  box.innerHTML="";
+  arr.forEach((name,i)=>{
+    const b=document.createElement("button"); b.textContent=name;
+    b.onclick=()=>{ setIdx(i); syncChips(); render(); };
+    box.appendChild(b);
+  });
+}
+makeChips($("layouts"), LAYOUTS, ()=>state.layout, i=>state.layout=i);
+makeChips($("couponStyles"), COUPON_STYLES, ()=>state.couponStyle, i=>state.couponStyle=i);
+makeChips($("imgModes"), IMG_MODES, ()=>state.imgMode, i=>state.imgMode=i);
+makeChips($("imgFx"), IMG_FX, ()=>state.imgFx, i=>state.imgFx=i);
+
+const palBox=$("palettes");
+PALETTES.forEach((p,i)=>{
+  const b=document.createElement("button"); b.title=p.name;
+  b.style.background = p.bg===p.bg2? p.bg : `linear-gradient(135deg,${p.bg},${p.bg2})`;
+  b.onclick=()=>{ state.palette=i; state.useCustomColor=false; $("customColorField").classList.add("hidden"); syncChips(); render(); };
+  palBox.appendChild(b);
+});
+// "직접 지정" 스와치
+const customSw=document.createElement("button");
+customSw.id="customSwatch"; customSw.title="직접 지정";
+customSw.style.background="conic-gradient(#ff5a2f,#ffd23f,#4de3c1,#6c7cff,#e0308f,#ff5a2f)";
+customSw.style.display="flex"; customSw.style.alignItems="center"; customSw.style.justifyContent="center";
+customSw.innerHTML='<span style="font-size:16px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5);font-weight:700">+</span>';
+customSw.onclick=()=>{ state.useCustomColor=true; $("customColorField").classList.remove("hidden"); syncChips(); render(); };
+palBox.appendChild(customSw);
+
+// HEX 입력 행 생성
+const colorRows=$("colorRows");
+COLOR_ROLES.forEach(([key,label])=>{
+  const row=document.createElement("div"); row.className="colorRow";
+  const span=document.createElement("span"); span.textContent=label;
+  const cp=document.createElement("input"); cp.type="color"; cp.value=state.customPalette[key];
+  const tx=document.createElement("input"); tx.type="text"; tx.value=state.customPalette[key];
+  const apply=v=>{
+    if(/^#?[0-9a-fA-F]{6}$/.test(v)){
+      const hex = v[0]==="#"? v : "#"+v;
+      state.customPalette[key]=hex; cp.value=hex; tx.value=hex.toUpperCase();
+      state.useCustomColor=true; $("customColorField").classList.remove("hidden"); syncChips(); render();
+    }
+  };
+  cp.oninput=()=>apply(cp.value);
+  tx.oninput=()=>apply(tx.value.trim());
+  row.append(span,cp,tx); colorRows.appendChild(row);
+});
+
+function syncChips(){
+  const map=[[$("layouts"),state.layout],[$("couponStyles"),state.couponStyle],[$("imgModes"),state.imgMode],[$("imgFx"),state.imgFx],[$("traceStyles"),state.traceStyle]];
+  map.forEach(([box,idx])=>[...box.children].forEach((b,i)=>b.classList.toggle("on",i===idx)));
+  [...palBox.children].forEach((b,i)=>{
+    if(b.id==="customSwatch") b.classList.toggle("on", state.useCustomColor);
+    else b.classList.toggle("on", !state.useCustomColor && i===state.palette);
+  });
+}
+
+/* ---------- 설정 초기화 ---------- */
+const FIELD_DEFAULTS={ brand:"RIHOON", headline:"새로운 시즌,\n새로운 시작", subcopy:"지금 바로 만나보세요 · 7월 한정 이벤트",
+  headSize:110, mainScale:100, mainY:0, subScale:100, subY:0,
+  discount:"30%", discountLabel:"OFF", couponCode:"RIHOON30", couponValid:"~ 2026.07.31 까지 · 3만원 이상 구매 시",
+  saleHeader:"UP TO 70% OFF SALE", saleDates:"08.17-08.30", promoMain1:"썸머", promoMain2:"시즌오프", promoBadge:"특가",
+  imgOverlay:40, traceDetail:80, customW:1080, customH:1350 };
+function resetAll(){
+  Object.entries(FIELD_DEFAULTS).forEach(([id,v])=>{ const el=$(id); if(el) el.value=v; });
+  state.layout=0; state.couponStyle=0; state.imgMode=0; state.imgFx=0; state.traceStyle=0; state.seed=1;
+  state.useCustomColor=false;
+  state.customPalette={ name:"직접", bg:"#5b2fe0", bg2:"#e0308f", fg:"#ffffff", sub:"#ffe4f2", accent:"#ffd23f" };
+  state.palette = state.mode==="promo" ? PALETTES.length-1 : 1;
+  state.image=null; state.trace=null; state.motifs=null; state.refLayout=null;
+  state.size = state.mode==="coupon" ? "coupon" : state.mode==="promo" ? "promo" : "feed";
+  $("size").value=state.size;
+  $("genSeed").textContent=state.seed;
+  $("traceDetailVal").textContent=$("traceDetail").value;
+  $("customColorField").classList.add("hidden");
+  $("customSizeField").classList.add("hidden");
+  syncCustomInputs();
+  // 업로드 상태 초기화
+  $("thumb").style.display="none"; fileInput.value="";
+  $("imgFieldWrap").style.display="none"; $("imgFxWrap").style.display="none"; $("imgOpacityWrap").style.display="none";
+  $("refThumb").style.display="none"; refInput.value=""; refImgEl=null;
+  $("refPaletteWrap").style.display="none"; $("refOptWrap").style.display="none"; $("traceWrap").style.display="none";
+  syncChips(); render();
+}
+$("resetBtn").onclick=resetAll;
+
+/* 모드 전환 */
+$("modeTabs").querySelectorAll("button").forEach(btn=>{
+  btn.onclick=()=>{
+    state.mode=btn.dataset.mode;
+    $("modeTabs").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===btn));
+    const coupon=state.mode==="coupon", promo=state.mode==="promo", gen=state.mode==="gen";
+    $("couponGroup").classList.toggle("hidden", !coupon);
+    $("promoGroup").classList.toggle("hidden", !promo);
+    $("genGroup").classList.toggle("hidden", !gen);
+    $("layoutField").classList.toggle("hidden", coupon||promo||gen);
+    $("headSizeField").classList.toggle("hidden", coupon||promo||gen);
+    $("mainScaleField").classList.toggle("hidden", !(promo||gen));
+    ["mainYField","subScaleField","subYField"].forEach(f=>$(f).classList.toggle("hidden", coupon));
+    $("headlineField").classList.toggle("hidden", coupon||promo);   // gen도 헤드라인 사용
+    $("imgUploadHint").style.display=(promo||gen)?"block":"none";
+    if(coupon){ state.size="coupon"; $("size").value="coupon"; }
+    else if(promo){
+      state.size="promo"; $("size").value="promo";
+      if(!state.useCustomColor){ state.palette=PALETTES.length-1; } // 썸머세일 기본
+    }
+    else if(state.size==="coupon"||state.size==="promo"){ state.size="feed"; $("size").value="feed"; }
+    $("customSizeField").classList.toggle("hidden", state.size!=="custom");
+    syncChips();
+    render();
+  };
+});
+// 자동 생성 셔플
+function setSeed(n){ state.seed=Math.max(1,n); $("genSeed").textContent=state.seed; render(); }
+$("genShuffle").onclick=()=>setSeed(1+Math.floor(Math.random()*99999));
+$("genPrev").onclick=()=>setSeed(state.seed-1);
+$("genNext").onclick=()=>setSeed(state.seed+1);
+
+$("size").onchange=e=>{
+  state.size=e.target.value;
+  $("customSizeField").classList.toggle("hidden", state.size!=="custom");
+  render();
+};
+["brand","headline","subcopy","headSize","mainScale","mainY","subScale","subY","discount","discountLabel","couponCode","couponValid","imgOverlay","customW","customH",
+ "saleHeader","saleDates","promoMain1","promoMain2","promoBadge"]
+  .forEach(id=>$(id).addEventListener("input", render));
+
+syncChips();
+render();
+</script>
+</body>
+</html>
