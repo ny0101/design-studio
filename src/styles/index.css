@@ -103,6 +103,24 @@ button:disabled {
   color: #fff;
   background: #363944;
 }
+.language-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 7px;
+  color: #b4b8c4;
+  background: transparent;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.language-toggle:hover {
+  color: #fff;
+  background: #363944;
+}
 .zoom-control {
   padding: 3px;
   border: 1px solid #373a43;
@@ -188,6 +206,7 @@ button:disabled {
   line-height: 1.4;
 }
 .main-content {
+  position: relative;
   min-width: 0;
   overflow: hidden;
   padding: 22px;
@@ -195,44 +214,230 @@ button:disabled {
   background-image: radial-gradient(#353740 1px, transparent 1px);
   background-size: 14px 14px;
 }
-.native-canvas {
+.shape-panel {
+  position: absolute;
+  z-index: 5;
+  top: 22px;
+  left: 22px;
+  width: 216px;
+  padding: 12px;
+  border: 1px solid #373a43;
+  border-radius: 10px;
+  background: #26282f;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35);
+}
+.shape-panel-title {
+  margin: 0 0 10px 4px;
+  color: #dfe3eb;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.shape-grid {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.shape-grid button {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  padding: 9px 2px 7px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #b4b8c4;
+  background: transparent;
+  font-size: 9px;
+}
+.shape-grid button:hover {
+  border-color: #464a56;
+  color: #fff;
+  background: #30323a;
+}
+.shape-grid button span {
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.icon-panel {
+  width: 248px;
+}
+.icon-search {
+  width: 100%;
+  margin-bottom: 9px;
+  padding: 6px 9px;
+  border: 1px solid #373a43;
+  border-radius: 7px;
+  color: #e3e6ed;
+  background: #1d1e23;
+  font-size: 11px;
+}
+.icon-search:focus {
+  border-color: #6c7cff;
+  outline: none;
+}
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 3px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+.icon-grid button {
+  display: grid;
+  place-items: center;
+  height: 32px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: #b4b8c4;
+  background: transparent;
+}
+.icon-grid button:hover {
+  border-color: #464a56;
+  color: #fff;
+  background: #30323a;
+}
+.icon-empty {
+  grid-column: 1 / -1;
+  margin: 12px 0;
+  color: #8a8f9c;
+  font-size: 11px;
+  text-align: center;
+}
+.native-canvas {
   height: 100%;
   min-height: 680px;
 }
+.canvas-viewport {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
 .canvas-meta {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   justify-content: space-between;
   width: fit-content;
-  margin: 0 auto 12px;
   padding: 6px 10px;
   border: 1px solid #373a43;
   border-radius: 7px;
   color: #aeb3c0;
   background: #26282f;
   font-size: 10px;
+  pointer-events: none;
 }
 .canvas-meta span + span {
   margin-left: 14px;
   color: #dfe3eb;
 }
-.canvas-scroll {
+.export-menu {
+  position: relative;
+}
+.export-dropdown {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  right: 0;
+  display: grid;
+  min-width: 172px;
+  padding: 5px;
+  border: 1px solid #373a43;
+  border-radius: 9px;
+  background: #26282f;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.4);
+}
+.export-dropdown button {
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 6px;
+  color: #dfe3eb;
+  background: transparent;
+  font-size: 11px;
+  text-align: left;
+}
+.export-dropdown button:hover {
+  color: #fff;
+  background: #363944;
+}
+.align-buttons {
+  display: flex;
+  gap: 4px;
+}
+.align-buttons button {
   display: grid;
   place-items: center;
-  min-height: 0;
-  overflow: auto;
-  padding: 25px;
+  width: 30px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid #373a43;
+  border-radius: 6px;
+  color: #b4b8c4;
+  background: transparent;
 }
-.stage-shell {
-  flex: none;
+.align-buttons button:hover,
+.align-buttons button.selected {
+  border-color: #6c7cff;
+  color: #fff;
+  background: #30323a;
+}
+.property-toggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 8px;
+  color: #aeb3c0;
+  font-size: 11px;
+}
+.property-toggle input {
+  accent-color: #6c7cff;
+}
+.text-editor {
+  position: absolute;
+  z-index: 4;
+  margin: 0;
+  padding: 0;
+  border: 1px dashed #6c7cff;
+  background: transparent;
+  outline: none;
   overflow: hidden;
-  border: 1px solid #dad7d0;
-  box-shadow: 0 22px 52px rgba(0, 0, 0, 0.35);
-  background: #f5f3ee;
+  resize: none;
+  transform-origin: top left;
 }
-.stage-shell canvas {
-  display: block;
+.ruler {
+  position: absolute;
+  z-index: 2;
+  background: rgba(38, 40, 47, 0.92);
+  pointer-events: none;
+}
+.ruler-horizontal {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 22px;
+}
+.ruler-vertical {
+  top: 0;
+  left: 0;
+  width: 22px;
+  height: 100%;
+}
+.ruler-corner {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  left: 0;
+  width: 22px;
+  height: 22px;
+  border-right: 1px solid #464a56;
+  border-bottom: 1px solid #464a56;
+  background: #26282f;
+  pointer-events: none;
 }
 .layers-panel {
   padding: 16px 10px;
@@ -276,12 +481,47 @@ button:disabled {
   color: #adb2bf;
   background: transparent;
   text-align: left;
+  cursor: pointer;
+  user-select: none;
 }
 .layer-row:hover,
 .layer-row.active {
   border-color: #464a56;
   background: #30323a;
   color: #eff1f5;
+}
+.panel-heading-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.panel-heading-actions button {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid #373a43;
+  border-radius: 6px;
+  color: #b4b8c4;
+  background: transparent;
+}
+.panel-heading-actions button:hover {
+  border-color: #6c7cff;
+  color: #fff;
+}
+.layer-rename {
+  width: 100%;
+  min-width: 0;
+  padding: 2px 5px;
+  border: 1px solid #6c7cff;
+  border-radius: 5px;
+  color: #eff1f5;
+  background: #1d1e23;
+  font-size: 10px;
+}
+.layer-rename:focus {
+  outline: none;
 }
 .layer-name {
   display: flex;
@@ -533,9 +773,6 @@ footer span:first-of-type {
   }
   .native-canvas {
     min-height: 560px;
-  }
-  .canvas-scroll {
-    padding: 10px;
   }
 }
 @media (max-width: 600px) {

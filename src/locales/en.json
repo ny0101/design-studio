@@ -1,0 +1,166 @@
+{
+  "app": {
+    "description": "Modern browser-based design tool for social media and e-commerce.",
+    "creatorNotice": "This project was originally created by Nayoon Kim. Removing or modifying creator information may violate the project license."
+  },
+  "toolbar": {
+    "undo": "Undo",
+    "redo": "Redo",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "toggleGrid": "Toggle grid",
+    "toggleGuides": "Toggle guides",
+    "toggleRulers": "Toggle rulers",
+    "toggleSafeArea": "Toggle safe area",
+    "legacyEditor": "Legacy editor",
+    "preview": "Preview",
+    "export": "Export",
+    "settings": "Settings",
+    "language": "Switch language"
+  },
+  "tools": {
+    "select": "Select",
+    "text": "Text",
+    "image": "Image",
+    "shape": "Shape",
+    "background": "Background",
+    "elements": "Elements",
+    "template": "Template",
+    "upload": "Upload"
+  },
+  "sidebar": {
+    "workspace": "Design workspace"
+  },
+  "canvas": {
+    "label": "Design canvas"
+  },
+  "layers": {
+    "title": "Layers",
+    "bringForward": "Bring forward",
+    "sendBackward": "Send backward",
+    "toggleVisibility": "Toggle visibility",
+    "toggleLock": "Toggle lock",
+    "delete": "Delete",
+    "duplicate": "Duplicate",
+    "group": "Group (Ctrl+G)",
+    "ungroup": "Ungroup (Ctrl+Shift+G)"
+  },
+  "kinds": {
+    "text": "Text",
+    "rect": "Rectangle",
+    "circle": "Circle",
+    "image": "Image",
+    "ellipse": "Ellipse",
+    "polygon": "Polygon",
+    "star": "Star",
+    "arrow": "Arrow",
+    "line": "Line",
+    "icon": "Icon",
+    "noSelection": "No selection"
+  },
+  "icons": {
+    "title": "Icons",
+    "search": "Search icons",
+    "empty": "No icons found"
+  },
+  "shapes": {
+    "title": "Shapes",
+    "rectangle": "Rectangle",
+    "rounded": "Rounded rectangle",
+    "circle": "Circle",
+    "ellipse": "Ellipse",
+    "triangle": "Triangle",
+    "polygon": "Polygon",
+    "star": "Star",
+    "arrow": "Arrow",
+    "line": "Line"
+  },
+  "properties": {
+    "title": "Properties",
+    "emptyTitle": "Select an element",
+    "emptyHint": "Choose a layer on the canvas to edit its properties.",
+    "multiSelected": "{count} elements",
+    "multiHint": "Move, group (Ctrl+G), duplicate, or delete the selection together.",
+    "transform": "Transform",
+    "opacity": "Opacity",
+    "rotation": "Rotation",
+    "text": "Text",
+    "content": "Content",
+    "font": "Font",
+    "fontFamily": "Font family",
+    "fontWeight": "Font weight",
+    "regular": "Regular",
+    "bold": "Bold",
+    "size": "Size",
+    "color": "Color",
+    "letterSpacing": "Letter spacing",
+    "lineHeight": "Line height (%)",
+    "alignment": "Alignment",
+    "alignLeft": "Align left",
+    "alignCenter": "Align center",
+    "alignRight": "Align right",
+    "shadow": "Shadow",
+    "outline": "Outline",
+    "outlineWidth": "Outline width",
+    "enabled": "Enabled",
+    "blur": "Blur",
+    "offsetX": "Offset X",
+    "offsetY": "Offset Y",
+    "shape": "Shape",
+    "fill": "Fill",
+    "radius": "Radius",
+    "image": "Image",
+    "replaceImage": "Replace image",
+    "brightness": "Brightness",
+    "contrast": "Contrast",
+    "saturation": "Saturation",
+    "grayscale": "Grayscale",
+    "filters": "Filters",
+    "flip": "Flip",
+    "flipH": "Flip horizontal",
+    "flipV": "Flip vertical",
+    "crop": "Crop",
+    "cropOriginal": "Original",
+    "icon": "Icon",
+    "stroke": "Stroke",
+    "strokeWidth": "Thickness",
+    "sides": "Sides",
+    "starPoints": "Points",
+    "innerRadius": "Inner radius"
+  },
+  "export": {
+    "png": "PNG",
+    "png-transparent": "PNG (transparent)",
+    "jpg": "JPG",
+    "svg": "SVG",
+    "pdf": "PDF"
+  },
+  "weights": {
+    "light": "Light",
+    "regular": "Regular",
+    "medium": "Medium",
+    "semibold": "Semibold",
+    "bold": "Bold",
+    "extrabold": "Extra bold",
+    "black": "Black"
+  },
+  "defaults": {
+    "newText": "New text",
+    "newTextContent": "New headline",
+    "rectangle": "Rectangle"
+  },
+  "footer": {
+    "createdBy": "Created by {name}",
+    "version": "Version {version}"
+  },
+  "about": {
+    "eyebrow": "ABOUT",
+    "projectName": "Project name",
+    "version": "Version",
+    "creator": "Creator",
+    "license": "License",
+    "github": "GitHub",
+    "homepage": "Homepage",
+    "notConfigured": "Not configured"
+  }
+}
