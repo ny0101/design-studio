@@ -15,7 +15,7 @@ import {
   Transformer,
 } from "react-konva";
 import type { KonvaEventObject } from "konva/lib/Node";
-import type Konva from "konva";
+import Konva from "konva";
 import type {
   CanvasElement,
   CanvasPan,
@@ -26,6 +26,7 @@ import { useStudioStore } from "../../store/studio-store";
 import { useTranslation } from "../../hooks/useTranslation";
 import { createShapeElement } from "../../utils/shapes";
 import { DEFAULT_FONT } from "../../utils/fonts";
+import { createImageElement } from "../../utils/images";
 
 export const CANVAS_SIZE = 1080;
 const MIN_SIZE = 5;
@@ -42,18 +43,65 @@ function RasterImage({
   shared: Record<string, unknown>;
 }) {
   const [image, setImage] = useState<HTMLImageElement>();
+  const node = useRef<Konva.Image>(null);
   useEffect(() => {
     const next = new window.Image();
     next.onload = () => setImage(next);
     next.src = element.src;
   }, [element.src]);
+  const brightness = (element.brightness - 100) / 100;
+  const contrast = element.contrast ?? 0;
+  const saturation = element.saturation ?? 0;
+  const blurRadius = element.blurRadius ?? 0;
+  const grayscale = element.grayscale ?? false;
+  const filters: typeof Konva.Filters.Brighten[] = [];
+  if (brightness !== 0) filters.push(Konva.Filters.Brighten);
+  if (contrast !== 0) filters.push(Konva.Filters.Contrast);
+  if (saturation !== 0) filters.push(Konva.Filters.HSL);
+  if (blurRadius > 0) filters.push(Konva.Filters.Blur);
+  if (grayscale) filters.push(Konva.Filters.Grayscale);
+  useEffect(() => {
+    const konvaImage = node.current;
+    if (!konvaImage || !image) return;
+    if (filters.length) konvaImage.cache();
+    else konvaImage.clearCache();
+    konvaImage.getLayer()?.batchDraw();
+  }, [
+    image,
+    filters.length,
+    brightness,
+    contrast,
+    saturation,
+    blurRadius,
+    grayscale,
+    element.width,
+    element.height,
+    element.radius,
+    element.crop,
+  ]);
   return (
     <KonvaImage
+      ref={node}
       {...shared}
       image={image}
       width={element.width}
       height={element.height}
       cornerRadius={element.radius}
+      crop={element.crop}
+      scaleX={element.flipX ? -1 : 1}
+      scaleY={element.flipY ? -1 : 1}
+      offsetX={element.flipX ? element.width : 0}
+      offsetY={element.flipY ? element.height : 0}
+      filters={filters}
+      brightness={brightness}
+      contrast={contrast}
+      saturation={saturation / 50}
+      blurRadius={blurRadius}
+      shadowEnabled={element.shadow?.enabled ?? false}
+      shadowColor={element.shadow?.color}
+      shadowBlur={element.shadow?.blur}
+      shadowOffsetX={element.shadow?.offsetX}
+      shadowOffsetY={element.shadow?.offsetY}
     />
   );
 }
@@ -79,8 +127,8 @@ function ElementNode({
     update(element.id, { x: event.target.x(), y: event.target.y() });
   const transformEnd = (event: KonvaEventObject<Event>) => {
     const node = event.target;
-    const scaleX = node.scaleX();
-    const scaleY = node.scaleY();
+    const scaleX = Math.abs(node.scaleX());
+    const scaleY = Math.abs(node.scaleY());
     node.scaleX(1);
     node.scaleY(1);
     const base = { x: node.x(), y: node.y(), rotation: node.rotation() };
@@ -481,7 +529,7 @@ export function DesignCanvas() {
         if (element.id === dragged.id() || element.hidden) continue;
         const node = layer?.findOne(`#${element.id}`);
         if (!node) continue;
-        const box = node.getClientRect({ relativeTo: layer ?? undefined });
+        const box = node.getClientRect({ relativeTo: layer ?? undefined, skipShadow: true });
         vertical.push(box.x, box.x + box.width / 2, box.x + box.width);
         horizontal.push(box.y, box.y + box.height / 2, box.y + box.height);
       }
@@ -505,7 +553,7 @@ export function DesignCanvas() {
     const layer = node.getLayer();
     if (!layer) return;
     const threshold = SNAP_THRESHOLD / scale;
-    const box = node.getClientRect({ relativeTo: layer });
+    const box = node.getClientRect({ relativeTo: layer, skipShadow: true });
     const ownV = [box.x, box.x + box.width / 2, box.x + box.width];
     const ownH = [box.y, box.y + box.height / 2, box.y + box.height];
     let bestV: { delta: number; line: number } | null = null;
@@ -570,6 +618,27 @@ export function DesignCanvas() {
     setTool("select");
   };
 
+  const onDropFiles = async (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    const files = Array.from(event.dataTransfer.files).filter((file) =>
+      file.type.startsWith("image/"),
+    );
+    if (!files.length) return;
+    const bounds = viewportRef.current?.getBoundingClientRect();
+    if (!bounds) return;
+    const position = {
+      x: (event.clientX - bounds.left - effectivePan.x) / scale,
+      y: (event.clientY - bounds.top - effectivePan.y) / scale,
+    };
+    for (const [index, file] of files.entries()) {
+      const element = await createImageElement(file, {
+        x: position.x + index * 30,
+        y: position.y + index * 30,
+      });
+      add(element);
+    }
+  };
+
   const onStageClick = (event: KonvaEventObject<MouseEvent>) => {
     if (panning) return;
     const stage = stageRef.current;
@@ -607,6 +676,8 @@ export function DesignCanvas() {
         ref={viewportRef}
         className="canvas-viewport"
         style={{ cursor: panning ? "grab" : undefined }}
+        onDragOver={(event) => event.preventDefault()}
+        onDrop={onDropFiles}
       >
         {viewport.width > 0 && (
           <Stage

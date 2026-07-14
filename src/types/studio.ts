@@ -78,6 +78,13 @@ export interface CircleElement extends BaseElement {
   fill: string;
 }
 
+export interface ImageCrop {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface ImageElement extends BaseElement {
   kind: "image";
   src: string;
@@ -85,6 +92,14 @@ export interface ImageElement extends BaseElement {
   height: number;
   radius: number;
   brightness: number;
+  flipX?: boolean;
+  flipY?: boolean;
+  contrast?: number;
+  saturation?: number;
+  blurRadius?: number;
+  grayscale?: boolean;
+  crop?: ImageCrop;
+  shadow?: ElementShadow;
 }
 
 export interface EllipseElement extends BaseElement {

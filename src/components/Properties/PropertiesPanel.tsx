@@ -2,13 +2,22 @@ import {
   AlignCenter,
   AlignLeft,
   AlignRight,
+  FlipHorizontal2,
+  FlipVertical2,
   ImagePlus,
   SlidersHorizontal,
 } from "lucide-react";
-import type { CanvasElement, TextAlign, TextElement } from "../../types/studio";
+import type {
+  CanvasElement,
+  ElementShadow,
+  ImageElement,
+  TextAlign,
+  TextElement,
+} from "../../types/studio";
 import { useStudioStore } from "../../store/studio-store";
 import { useTranslation } from "../../hooks/useTranslation";
 import { DEFAULT_FONT, FONT_FAMILIES, FONT_WEIGHTS } from "../../utils/fonts";
+import { computeCenteredCrop, loadImageSource } from "../../utils/images";
 
 const NumberField = ({
   label,
@@ -38,6 +47,69 @@ const NumberField = ({
   </label>
 );
 
+const DEFAULT_SHADOW: ElementShadow = {
+  enabled: false,
+  color: "#000000",
+  blur: 12,
+  offsetX: 0,
+  offsetY: 6,
+};
+
+function ShadowControls({
+  shadow,
+  onChange,
+}: {
+  shadow: ElementShadow;
+  onChange: (shadow: ElementShadow) => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <section>
+      <h3>{t("properties.shadow")}</h3>
+      <label className="property-toggle">
+        <input
+          type="checkbox"
+          checked={shadow.enabled}
+          onChange={(event) => onChange({ ...shadow, enabled: event.target.checked })}
+        />
+        <span>{t("properties.enabled")}</span>
+      </label>
+      {shadow.enabled && (
+        <>
+          <label className="property-field color">
+            <span>{t("properties.color")}</span>
+            <input
+              type="color"
+              value={shadow.color}
+              onChange={(event) => onChange({ ...shadow, color: event.target.value })}
+            />
+          </label>
+          <NumberField
+            label={t("properties.blur")}
+            value={shadow.blur}
+            max={80}
+            onChange={(value) => onChange({ ...shadow, blur: value })}
+          />
+          <NumberField
+            label={t("properties.offsetX")}
+            value={shadow.offsetX}
+            min={-60}
+            max={60}
+            onChange={(value) => onChange({ ...shadow, offsetX: value })}
+          />
+          <NumberField
+            label={t("properties.offsetY")}
+            value={shadow.offsetY}
+            min={-60}
+            max={60}
+            onChange={(value) => onChange({ ...shadow, offsetY: value })}
+          />
+        </>
+      )}
+    </section>
+  );
+}
+
 function TextProperties({
   element,
   change,
@@ -46,13 +118,7 @@ function TextProperties({
   change: (patch: Partial<TextElement>) => void;
 }) {
   const { t } = useTranslation();
-  const shadow = element.shadow ?? {
-    enabled: false,
-    color: "#000000",
-    blur: 12,
-    offsetX: 0,
-    offsetY: 6,
-  };
+  const shadow = element.shadow ?? DEFAULT_SHADOW;
   const outline = element.outline ?? { enabled: false, color: "#FFFFFF", width: 2 };
   const aligns: { value: TextAlign; icon: typeof AlignLeft; label: string }[] = [
     { value: "left", icon: AlignLeft, label: t("properties.alignLeft") },
@@ -141,53 +207,7 @@ function TextProperties({
           </div>
         </div>
       </section>
-      <section>
-        <h3>{t("properties.shadow")}</h3>
-        <label className="property-toggle">
-          <input
-            type="checkbox"
-            checked={shadow.enabled}
-            onChange={(event) =>
-              change({ shadow: { ...shadow, enabled: event.target.checked } })
-            }
-          />
-          <span>{t("properties.enabled")}</span>
-        </label>
-        {shadow.enabled && (
-          <>
-            <label className="property-field color">
-              <span>{t("properties.color")}</span>
-              <input
-                type="color"
-                value={shadow.color}
-                onChange={(event) =>
-                  change({ shadow: { ...shadow, color: event.target.value } })
-                }
-              />
-            </label>
-            <NumberField
-              label={t("properties.blur")}
-              value={shadow.blur}
-              max={80}
-              onChange={(value) => change({ shadow: { ...shadow, blur: value } })}
-            />
-            <NumberField
-              label={t("properties.offsetX")}
-              value={shadow.offsetX}
-              min={-60}
-              max={60}
-              onChange={(value) => change({ shadow: { ...shadow, offsetX: value } })}
-            />
-            <NumberField
-              label={t("properties.offsetY")}
-              value={shadow.offsetY}
-              min={-60}
-              max={60}
-              onChange={(value) => change({ shadow: { ...shadow, offsetY: value } })}
-            />
-          </>
-        )}
-      </section>
+      <ShadowControls shadow={shadow} onChange={(next) => change({ shadow: next })} />
       <section>
         <h3>{t("properties.outline")}</h3>
         <label className="property-toggle">
@@ -226,6 +246,145 @@ function TextProperties({
   );
 }
 
+const CROP_PRESETS: { key: string; ratio: number | null }[] = [
+  { key: "original", ratio: null },
+  { key: "1:1", ratio: 1 },
+  { key: "4:3", ratio: 4 / 3 },
+  { key: "3:4", ratio: 3 / 4 },
+  { key: "16:9", ratio: 16 / 9 },
+  { key: "9:16", ratio: 9 / 16 },
+];
+
+function ImageProperties({
+  element,
+  change,
+  upload,
+}: {
+  element: ImageElement;
+  change: (patch: Partial<ImageElement>) => void;
+  upload: (file: File) => void;
+}) {
+  const { t } = useTranslation();
+  const shadow = element.shadow ?? DEFAULT_SHADOW;
+  const applyCrop = (key: string) => {
+    const preset = CROP_PRESETS.find((item) => item.key === key);
+    if (!preset) return;
+    const probe = new Image();
+    probe.onload = () => {
+      if (preset.ratio === null) {
+        change({
+          crop: undefined,
+          height: Math.round(element.width * (probe.height / probe.width)),
+        });
+      } else {
+        change({
+          crop: computeCenteredCrop(probe.width, probe.height, preset.ratio),
+          height: Math.round(element.width / preset.ratio),
+        });
+      }
+    };
+    probe.src = element.src;
+  };
+  const currentCrop = element.crop
+    ? (CROP_PRESETS.find(
+        (item) =>
+          item.ratio !== null &&
+          element.crop &&
+          Math.abs(element.crop.width / element.crop.height - item.ratio) < 0.01,
+      )?.key ?? "original")
+    : "original";
+  return (
+    <>
+      <section>
+        <h3>{t("properties.image")}</h3>
+        <label className="upload-replace">
+          <ImagePlus size={16} />
+          {t("properties.replaceImage")}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(event) => event.target.files?.[0] && upload(event.target.files[0])}
+          />
+        </label>
+        <div className="property-field">
+          <span>{t("properties.flip")}</span>
+          <div className="align-buttons">
+            <button
+              className={element.flipX ? "selected" : undefined}
+              onClick={() => change({ flipX: !element.flipX })}
+              title={t("properties.flipH")}
+            >
+              <FlipHorizontal2 size={15} />
+            </button>
+            <button
+              className={element.flipY ? "selected" : undefined}
+              onClick={() => change({ flipY: !element.flipY })}
+              title={t("properties.flipV")}
+            >
+              <FlipVertical2 size={15} />
+            </button>
+          </div>
+        </div>
+        <label className="property-field">
+          <span>{t("properties.crop")}</span>
+          <select value={currentCrop} onChange={(event) => applyCrop(event.target.value)}>
+            {CROP_PRESETS.map((preset) => (
+              <option key={preset.key} value={preset.key}>
+                {preset.key === "original" ? t("properties.cropOriginal") : preset.key}
+              </option>
+            ))}
+          </select>
+        </label>
+        <NumberField
+          label={t("properties.radius")}
+          value={element.radius}
+          max={180}
+          onChange={(value) => change({ radius: value })}
+        />
+      </section>
+      <section>
+        <h3>{t("properties.filters")}</h3>
+        <NumberField
+          label={t("properties.brightness")}
+          value={element.brightness}
+          min={0}
+          max={200}
+          onChange={(value) => change({ brightness: value })}
+        />
+        <NumberField
+          label={t("properties.contrast")}
+          value={element.contrast ?? 0}
+          min={-100}
+          max={100}
+          onChange={(value) => change({ contrast: value })}
+        />
+        <NumberField
+          label={t("properties.saturation")}
+          value={element.saturation ?? 0}
+          min={-100}
+          max={100}
+          onChange={(value) => change({ saturation: value })}
+        />
+        <NumberField
+          label={t("properties.blur")}
+          value={element.blurRadius ?? 0}
+          max={40}
+          onChange={(value) => change({ blurRadius: value })}
+        />
+        <label className="property-toggle">
+          <input
+            type="checkbox"
+            checked={element.grayscale ?? false}
+            onChange={(event) => change({ grayscale: event.target.checked })}
+          />
+          <span>{t("properties.grayscale")}</span>
+        </label>
+      </section>
+      <ShadowControls shadow={shadow} onChange={(next) => change({ shadow: next })} />
+    </>
+  );
+}
+
 function EmptyProperties() {
   const { t } = useTranslation();
   return (
@@ -238,29 +397,18 @@ function EmptyProperties() {
 }
 
 export function PropertiesPanel() {
-  const { elements, selectedId, update, add } = useStudioStore();
+  const { elements, selectedId, update } = useStudioStore();
   const { t } = useTranslation();
   const selected = elements.find((element) => element.id === selectedId);
-  const upload = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = () =>
-      add({
-        id: crypto.randomUUID(),
-        name: file.name,
-        kind: "image",
-        src: String(reader.result),
-        x: 190,
-        y: 200,
-        width: 620,
-        height: 430,
-        radius: 0,
-        brightness: 100,
-        rotation: 0,
-        opacity: 1,
-        hidden: false,
-        locked: false,
-      });
-    reader.readAsDataURL(file);
+  const upload = async (file: File) => {
+    if (!selected || selected.kind !== "image") return;
+    const { src, naturalWidth, naturalHeight } = await loadImageSource(file);
+    update(selected.id, {
+      src,
+      name: file.name,
+      height: Math.round(selected.width * (naturalHeight / naturalWidth)),
+      crop: undefined,
+    });
   };
   return (
     <aside className="properties-panel">
@@ -441,33 +589,7 @@ function Properties({
         </section>
       )}
       {element.kind === "image" && (
-        <section>
-          <h3>{t("properties.image")}</h3>
-          <label className="upload-replace">
-            <ImagePlus size={16} />
-            {t("properties.replaceImage")}
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(event) =>
-                event.target.files?.[0] && upload(event.target.files[0])
-              }
-            />
-          </label>
-          <NumberField
-            label={t("properties.radius")}
-            value={element.radius}
-            max={180}
-            onChange={(value) => change({ radius: value })}
-          />
-          <NumberField
-            label={t("properties.brightness")}
-            value={element.brightness}
-            min={0}
-            max={200}
-            onChange={(value) => change({ brightness: value })}
-          />
-        </section>
+        <ImageProperties element={element} change={change} upload={upload} />
       )}
     </div>
   );

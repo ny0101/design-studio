@@ -13,6 +13,7 @@ import {
 import type { StudioTool } from "../../types/studio";
 import { useStudioStore } from "../../store/studio-store";
 import { useTranslation } from "../../hooks/useTranslation";
+import { createImageElement } from "../../utils/images";
 
 const tools: { id: StudioTool; icon: typeof MousePointer2 }[] = [
   { id: "select", icon: MousePointer2 },
@@ -28,26 +29,8 @@ export function Sidebar() {
   const input = useRef<HTMLInputElement>(null);
   const { activeTool, setTool, add } = useStudioStore();
   const { t } = useTranslation();
-  const onUpload = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = () =>
-      add({
-        id: crypto.randomUUID(),
-        name: file.name,
-        kind: "image",
-        src: String(reader.result),
-        x: 180,
-        y: 220,
-        width: 640,
-        height: 420,
-        radius: 0,
-        brightness: 100,
-        rotation: 0,
-        opacity: 1,
-        hidden: false,
-        locked: false,
-      });
-    reader.readAsDataURL(file);
+  const onUpload = async (file: File) => {
+    add(await createImageElement(file, { x: 540, y: 540 }));
   };
   return (
     <aside className="tool-sidebar" aria-label={t("canvas.label")}>
