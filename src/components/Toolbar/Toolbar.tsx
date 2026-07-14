@@ -156,7 +156,7 @@ function ExportMenu() {
     <div className="export-menu" ref={menu}>
       <button className="toolbar-button primary" onClick={() => setOpen(!open)}>
         <Download size={16} />
-        {t("toolbar.export")}
+        <span className="toolbar-button-label">{t("toolbar.export")}</span>
       </button>
       {open && (
         <div className="export-dropdown">
@@ -237,14 +237,22 @@ export function Toolbar() {
           <span>{language === "ko" ? "KO" : "EN"}</span>
         </button>
         <button
-          className={showGrid ? "toolbar-icon selected" : "toolbar-icon"}
+          className={
+            showGrid
+              ? "toolbar-icon toolbar-icon-compact-hide selected"
+              : "toolbar-icon toolbar-icon-compact-hide"
+          }
           onClick={toggleGrid}
           title={t("toolbar.toggleGrid")}
         >
           <Grid2X2 size={17} />
         </button>
         <button
-          className={showGuides ? "toolbar-icon selected" : "toolbar-icon"}
+          className={
+            showGuides
+              ? "toolbar-icon toolbar-icon-compact-hide selected"
+              : "toolbar-icon toolbar-icon-compact-hide"
+          }
           onClick={toggleGuides}
           title={t("toolbar.toggleGuides")}
         >

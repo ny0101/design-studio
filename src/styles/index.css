@@ -1112,10 +1112,27 @@ footer span:first-of-type {
   .toolbar {
     padding: 0 9px;
   }
+  .toolbar-start,
   .toolbar-actions {
+    min-width: 0;
     gap: 1px;
   }
-  .toolbar-icon:nth-child(-n + 2) {
+  .brand span:not(.brand-mark) {
+    white-space: nowrap;
+  }
+  .toolbar-icon-compact-hide {
     display: none;
+  }
+  .language-toggle span,
+  .toolbar-button-label {
+    display: none;
+  }
+}
+@media (max-width: 420px) {
+  .brand span:not(.brand-mark) {
+    display: none;
+  }
+  .toolbar-start {
+    gap: 2px;
   }
 }

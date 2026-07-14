@@ -25,14 +25,20 @@ export interface GeneratedImage {
   height: number;
 }
 
+const QUALITY_SUFFIX =
+  ", high quality, sharp focus, clean professional illustration, detailed";
+
 export async function generateImage(
   prompt: string,
   width: number,
   height: number,
 ): Promise<GeneratedImage> {
+  const boostedPrompt = `${prompt}${QUALITY_SUFFIX}`;
+  const seed = Math.floor(Math.random() * 1_000_000);
   const url =
-    `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}` +
-    `?width=${Math.min(1920, width)}&height=${Math.min(1920, height)}&nologo=true`;
+    `https://image.pollinations.ai/prompt/${encodeURIComponent(boostedPrompt)}` +
+    `?width=${Math.min(1920, width)}&height=${Math.min(1920, height)}` +
+    `&model=flux&enhance=true&seed=${seed}&nologo=true`;
   const response = await fetch(url);
   if (!response.ok) throw new Error(`Image service error (${response.status})`);
   const blob = await response.blob();

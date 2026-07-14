@@ -560,6 +560,18 @@ export function DesignCanvas() {
     return () => observer.disconnect();
   }, []);
 
+  const autoFitted = useRef(false);
+  useEffect(() => {
+    if (autoFitted.current || viewport.width === 0 || viewport.height === 0) return;
+    autoFitted.current = true;
+    const zoomFit = Math.floor(
+      Math.min((viewport.width - 90) / canvasW, (viewport.height - 90) / canvasH) * 100,
+    );
+    if (Number.isFinite(zoomFit) && zoomFit > 0 && zoomFit < zoom) {
+      setZoom(zoomFit);
+    }
+  }, [viewport, canvasW, canvasH, zoom, setZoom]);
+
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.code !== "Space" || event.repeat) return;
