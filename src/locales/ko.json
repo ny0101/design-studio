@@ -128,6 +128,19 @@
     "starPoints": "꼭짓점 수",
     "innerRadius": "내부 반경"
   },
+  "templates": {
+    "title": "템플릿",
+    "mine": "내 템플릿",
+    "saveCurrent": "현재 디자인을 템플릿으로 저장",
+    "namePlaceholder": "템플릿 이름…",
+    "delete": "템플릿 삭제",
+    "summerSale": "여름 세일",
+    "minimalQuote": "미니멀 인용구",
+    "productPromo": "제품 프로모션",
+    "eventPoster": "이벤트 포스터",
+    "webinarInvite": "웨비나 초대",
+    "brandGrid": "볼드 브랜드"
+  },
   "export": {
     "png": "PNG",
     "png-transparent": "PNG (투명 배경)",

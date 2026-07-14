@@ -130,7 +130,7 @@ function renderElement(element: CanvasElement): string {
   switch (element.kind) {
     case "rect":
       return (
-        openGroup(element) +
+        openGroup(element, shadowFilter(element.shadow)) +
         `<rect width="${num(element.width)}" height="${num(element.height)}" fill="${esc(element.fill)}" rx="${num(element.radius)}"/></g>`
       );
     case "circle":

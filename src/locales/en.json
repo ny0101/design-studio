@@ -128,6 +128,19 @@
     "starPoints": "Points",
     "innerRadius": "Inner radius"
   },
+  "templates": {
+    "title": "Templates",
+    "mine": "My templates",
+    "saveCurrent": "Save current design as template",
+    "namePlaceholder": "Template name…",
+    "delete": "Delete template",
+    "summerSale": "Summer sale",
+    "minimalQuote": "Minimal quote",
+    "productPromo": "Product promo",
+    "eventPoster": "Event poster",
+    "webinarInvite": "Webinar invite",
+    "brandGrid": "Bold brand"
+  },
   "export": {
     "png": "PNG",
     "png-transparent": "PNG (transparent)",

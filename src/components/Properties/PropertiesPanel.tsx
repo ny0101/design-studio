@@ -488,23 +488,29 @@ function Properties({
       </section>
       {element.kind === "text" && <TextProperties element={element} change={change} />}
       {element.kind === "rect" && (
-        <section>
-          <h3>{t("properties.shape")}</h3>
-          <label className="property-field color">
-            <span>{t("properties.fill")}</span>
-            <input
-              type="color"
-              value={element.fill}
-              onChange={(event) => change({ fill: event.target.value })}
+        <>
+          <section>
+            <h3>{t("properties.shape")}</h3>
+            <label className="property-field color">
+              <span>{t("properties.fill")}</span>
+              <input
+                type="color"
+                value={element.fill}
+                onChange={(event) => change({ fill: event.target.value })}
+              />
+            </label>
+            <NumberField
+              label={t("properties.radius")}
+              value={element.radius}
+              max={180}
+              onChange={(value) => change({ radius: value })}
             />
-          </label>
-          <NumberField
-            label={t("properties.radius")}
-            value={element.radius}
-            max={180}
-            onChange={(value) => change({ radius: value })}
+          </section>
+          <ShadowControls
+            shadow={element.shadow ?? DEFAULT_SHADOW}
+            onChange={(next) => change({ shadow: next })}
           />
-        </section>
+        </>
       )}
       {element.kind === "circle" && (
         <section>

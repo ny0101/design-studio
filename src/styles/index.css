@@ -264,6 +264,102 @@ button:disabled {
 .icon-panel {
   width: 248px;
 }
+.template-panel {
+  width: 264px;
+  max-height: calc(100% - 44px);
+  overflow-y: auto;
+}
+.template-section {
+  margin-top: 12px;
+}
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 7px;
+}
+.template-grid button {
+  display: grid;
+  gap: 5px;
+  width: 100%;
+  padding: 6px;
+  border: 1px solid #373a43;
+  border-radius: 9px;
+  color: #b4b8c4;
+  background: transparent;
+  font-size: 9px;
+}
+.template-grid button:hover {
+  border-color: #6c7cff;
+  color: #fff;
+  background: #30323a;
+}
+.template-grid img {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 6px;
+  object-fit: cover;
+  background: #fff;
+}
+.template-grid button span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.template-user {
+  position: relative;
+}
+.template-delete {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  color: #fff;
+  background: rgba(21, 22, 26, 0.75);
+}
+.template-delete:hover {
+  background: #d64550;
+}
+.template-save {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+.template-save input {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 9px;
+  border: 1px solid #373a43;
+  border-radius: 7px;
+  color: #e3e6ed;
+  background: #1d1e23;
+  font-size: 11px;
+}
+.template-save input:focus {
+  border-color: #6c7cff;
+  outline: none;
+}
+.template-save button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  border: 1px solid #373a43;
+  border-radius: 7px;
+  color: #b4b8c4;
+  background: transparent;
+}
+.template-save button:enabled:hover {
+  border-color: #6c7cff;
+  color: #fff;
+}
+.template-save button:disabled {
+  opacity: 0.4;
+}
 .icon-search {
   width: 100%;
   margin-bottom: 9px;
