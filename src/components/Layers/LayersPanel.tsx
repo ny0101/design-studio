@@ -8,13 +8,15 @@ import {
   Trash2,
 } from "lucide-react";
 import { useStudioStore } from "../../store/studio-store";
+import { useTranslation } from "../../hooks/useTranslation";
 
 export function LayersPanel() {
   const { elements, selectedId, select, update, remove, reorder } = useStudioStore();
+  const { t } = useTranslation();
   return (
     <aside className="layers-panel">
       <div className="panel-heading">
-        <p>Layers</p>
+        <p>{t("layers.title")}</p>
         <span>{elements.length}</span>
       </div>
       <div className="layer-list">
@@ -29,28 +31,34 @@ export function LayersPanel() {
               {element.name}
             </span>
             <span className="layer-actions" onClick={(event) => event.stopPropagation()}>
-              <button onClick={() => reorder(element.id, "up")} title="Bring forward">
+              <button
+                onClick={() => reorder(element.id, "up")}
+                title={t("layers.bringForward")}
+              >
                 <ChevronUp size={13} />
               </button>
-              <button onClick={() => reorder(element.id, "down")} title="Send backward">
+              <button
+                onClick={() => reorder(element.id, "down")}
+                title={t("layers.sendBackward")}
+              >
                 <ChevronDown size={13} />
               </button>
               <button
                 onClick={() => update(element.id, { hidden: !element.hidden })}
-                title="Toggle visibility"
+                title={t("layers.toggleVisibility")}
               >
                 {element.hidden ? <EyeOff size={13} /> : <Eye size={13} />}
               </button>
               <button
                 onClick={() => update(element.id, { locked: !element.locked })}
-                title="Toggle lock"
+                title={t("layers.toggleLock")}
               >
                 {element.locked ? <Lock size={13} /> : <LockKeyholeOpen size={13} />}
               </button>
               <button
                 onClick={() => !element.locked && remove(element.id)}
                 disabled={element.locked}
-                title="Delete"
+                title={t("layers.delete")}
               >
                 <Trash2 size={13} />
               </button>

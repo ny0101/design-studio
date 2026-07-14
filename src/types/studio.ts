@@ -1,5 +1,6 @@
 export type WorkspaceView = "studio" | "about";
 export type ColorTheme = "dark" | "light";
+export type Language = "ko" | "en";
 export type StudioTool =
   | "select"
   | "text"
@@ -61,6 +62,7 @@ export type CanvasElement = TextElement | RectElement | CircleElement | ImageEle
 export interface StudioState {
   view: WorkspaceView;
   theme: ColorTheme;
+  language: Language;
   activeTool: StudioTool;
   zoom: number;
   showGrid: boolean;

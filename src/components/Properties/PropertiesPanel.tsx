@@ -1,6 +1,7 @@
 import { ImagePlus, SlidersHorizontal } from "lucide-react";
 import type { CanvasElement } from "../../types/studio";
 import { useStudioStore } from "../../store/studio-store";
+import { useTranslation } from "../../hooks/useTranslation";
 
 const NumberField = ({
   label,
@@ -31,17 +32,19 @@ const NumberField = ({
 );
 
 function EmptyProperties() {
+  const { t } = useTranslation();
   return (
     <div className="empty-properties">
       <SlidersHorizontal size={24} />
-      <b>Select an element</b>
-      <p>Choose a layer on the canvas to edit its properties.</p>
+      <b>{t("properties.emptyTitle")}</b>
+      <p>{t("properties.emptyHint")}</p>
     </div>
   );
 }
 
 export function PropertiesPanel() {
   const { elements, selectedId, update, add } = useStudioStore();
+  const { t } = useTranslation();
   const selected = elements.find((element) => element.id === selectedId);
   const upload = (file: File) => {
     const reader = new FileReader();
@@ -67,8 +70,8 @@ export function PropertiesPanel() {
   return (
     <aside className="properties-panel">
       <div className="panel-heading">
-        <p>Properties</p>
-        <span>{selected?.kind ?? "No selection"}</span>
+        <p>{t("properties.title")}</p>
+        <span>{selected ? t(`kinds.${selected.kind}`) : t("kinds.noSelection")}</span>
       </div>
       {!selected && <EmptyProperties />}
       {selected && <Properties element={selected} update={update} upload={upload} />}
@@ -85,11 +88,12 @@ function Properties({
   update: (id: string, patch: Partial<CanvasElement>) => void;
   upload: (file: File) => void;
 }) {
+  const { t } = useTranslation();
   const change = (patch: Partial<CanvasElement>) => update(element.id, patch);
   return (
     <div className="property-groups">
       <section>
-        <h3>Transform</h3>
+        <h3>{t("properties.transform")}</h3>
         <div className="property-row">
           <label>
             X
@@ -109,13 +113,13 @@ function Properties({
           </label>
         </div>
         <NumberField
-          label="Opacity"
+          label={t("properties.opacity")}
           value={Math.round(element.opacity * 100)}
           max={100}
           onChange={(value) => change({ opacity: value / 100 })}
         />
         <NumberField
-          label="Rotation"
+          label={t("properties.rotation")}
           value={Math.round(element.rotation)}
           min={-180}
           max={180}
@@ -124,35 +128,35 @@ function Properties({
       </section>
       {element.kind === "text" && (
         <section>
-          <h3>Text</h3>
+          <h3>{t("properties.text")}</h3>
           <label className="property-field">
-            <span>Content</span>
+            <span>{t("properties.content")}</span>
             <textarea
               value={element.text}
               onChange={(event) => change({ text: event.target.value })}
             />
           </label>
           <label className="property-field">
-            <span>Font</span>
+            <span>{t("properties.font")}</span>
             <select
               value={element.fontStyle}
               onChange={(event) =>
                 change({ fontStyle: event.target.value as "normal" | "bold" })
               }
             >
-              <option value="normal">Regular</option>
-              <option value="bold">Bold</option>
+              <option value="normal">{t("properties.regular")}</option>
+              <option value="bold">{t("properties.bold")}</option>
             </select>
           </label>
           <NumberField
-            label="Size"
+            label={t("properties.size")}
             value={element.fontSize}
             min={12}
             max={220}
             onChange={(value) => change({ fontSize: value })}
           />
           <label className="property-field color">
-            <span>Color</span>
+            <span>{t("properties.color")}</span>
             <input
               type="color"
               value={element.fill}
@@ -163,9 +167,9 @@ function Properties({
       )}
       {element.kind === "rect" && (
         <section>
-          <h3>Shape</h3>
+          <h3>{t("properties.shape")}</h3>
           <label className="property-field color">
-            <span>Fill</span>
+            <span>{t("properties.fill")}</span>
             <input
               type="color"
               value={element.fill}
@@ -173,7 +177,7 @@ function Properties({
             />
           </label>
           <NumberField
-            label="Radius"
+            label={t("properties.radius")}
             value={element.radius}
             max={180}
             onChange={(value) => change({ radius: value })}
@@ -182,9 +186,9 @@ function Properties({
       )}
       {element.kind === "circle" && (
         <section>
-          <h3>Shape</h3>
+          <h3>{t("properties.shape")}</h3>
           <label className="property-field color">
-            <span>Fill</span>
+            <span>{t("properties.fill")}</span>
             <input
               type="color"
               value={element.fill}
@@ -192,7 +196,7 @@ function Properties({
             />
           </label>
           <NumberField
-            label="Radius"
+            label={t("properties.radius")}
             value={element.radius}
             max={420}
             onChange={(value) => change({ radius: value })}
@@ -201,10 +205,10 @@ function Properties({
       )}
       {element.kind === "image" && (
         <section>
-          <h3>Image</h3>
+          <h3>{t("properties.image")}</h3>
           <label className="upload-replace">
             <ImagePlus size={16} />
-            Replace image
+            {t("properties.replaceImage")}
             <input
               type="file"
               accept="image/*"
@@ -214,13 +218,13 @@ function Properties({
             />
           </label>
           <NumberField
-            label="Radius"
+            label={t("properties.radius")}
             value={element.radius}
             max={180}
             onChange={(value) => change({ radius: value })}
           />
           <NumberField
-            label="Brightness"
+            label={t("properties.brightness")}
             value={element.brightness}
             min={0}
             max={200}

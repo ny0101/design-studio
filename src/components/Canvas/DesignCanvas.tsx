@@ -3,6 +3,7 @@ import { Circle, Image as KonvaImage, Layer, Line, Rect, Stage, Text } from "rea
 import type { KonvaEventObject } from "konva/lib/Node";
 import type { CanvasElement, ImageElement } from "../../types/studio";
 import { useStudioStore } from "../../store/studio-store";
+import { useTranslation } from "../../hooks/useTranslation";
 
 const CANVAS_SIZE = 1080;
 const id = () => crypto.randomUUID();
@@ -71,6 +72,7 @@ function ElementNode({ element }: { element: CanvasElement }) {
 export function DesignCanvas() {
   const stage = useRef<import("konva/lib/Stage").Stage>(null);
   const { elements, select, zoom, showGrid, showGuides, add, setTool } = useStudioStore();
+  const { t } = useTranslation();
   const scale = (zoom / 100) * 0.62;
   useEffect(() => {
     const exportCanvas = () => {
@@ -87,11 +89,11 @@ export function DesignCanvas() {
   const addText = () => {
     const element = {
       id: id(),
-      name: "New text",
+      name: t("defaults.newText"),
       kind: "text" as const,
       x: 160,
       y: 180,
-      text: "New headline",
+      text: t("defaults.newTextContent"),
       fontSize: 68,
       fontStyle: "bold" as const,
       fill: "#16181D",
@@ -108,7 +110,7 @@ export function DesignCanvas() {
   const addShape = () => {
     const element = {
       id: id(),
-      name: "Rectangle",
+      name: t("defaults.rectangle"),
       kind: "rect" as const,
       x: 320,
       y: 530,
@@ -133,7 +135,7 @@ export function DesignCanvas() {
     }
   };
   return (
-    <section className="native-canvas" aria-label="Design canvas">
+    <section className="native-canvas" aria-label={t("canvas.label")}>
       <div className="canvas-meta">
         <span>1080 × 1080 px</span>
         <span>{zoom}%</span>

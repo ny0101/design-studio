@@ -1,0 +1,90 @@
+{
+  "app": {
+    "description": "Modern browser-based design tool for social media and e-commerce.",
+    "creatorNotice": "This project was originally created by Nayoon Kim. Removing or modifying creator information may violate the project license."
+  },
+  "toolbar": {
+    "undo": "Undo",
+    "redo": "Redo",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "toggleGrid": "Toggle grid",
+    "toggleGuides": "Toggle guides",
+    "legacyEditor": "Legacy editor",
+    "preview": "Preview",
+    "export": "Export",
+    "settings": "Settings",
+    "language": "Switch language"
+  },
+  "tools": {
+    "select": "Select",
+    "text": "Text",
+    "image": "Image",
+    "shape": "Shape",
+    "background": "Background",
+    "elements": "Elements",
+    "template": "Template",
+    "upload": "Upload"
+  },
+  "sidebar": {
+    "workspace": "Design workspace"
+  },
+  "canvas": {
+    "label": "Design canvas"
+  },
+  "layers": {
+    "title": "Layers",
+    "bringForward": "Bring forward",
+    "sendBackward": "Send backward",
+    "toggleVisibility": "Toggle visibility",
+    "toggleLock": "Toggle lock",
+    "delete": "Delete"
+  },
+  "kinds": {
+    "text": "Text",
+    "rect": "Rectangle",
+    "circle": "Circle",
+    "image": "Image",
+    "noSelection": "No selection"
+  },
+  "properties": {
+    "title": "Properties",
+    "emptyTitle": "Select an element",
+    "emptyHint": "Choose a layer on the canvas to edit its properties.",
+    "transform": "Transform",
+    "opacity": "Opacity",
+    "rotation": "Rotation",
+    "text": "Text",
+    "content": "Content",
+    "font": "Font",
+    "regular": "Regular",
+    "bold": "Bold",
+    "size": "Size",
+    "color": "Color",
+    "shape": "Shape",
+    "fill": "Fill",
+    "radius": "Radius",
+    "image": "Image",
+    "replaceImage": "Replace image",
+    "brightness": "Brightness"
+  },
+  "defaults": {
+    "newText": "New text",
+    "newTextContent": "New headline",
+    "rectangle": "Rectangle"
+  },
+  "footer": {
+    "createdBy": "Created by {name}",
+    "version": "Version {version}"
+  },
+  "about": {
+    "eyebrow": "ABOUT",
+    "projectName": "Project name",
+    "version": "Version",
+    "creator": "Creator",
+    "license": "License",
+    "github": "GitHub",
+    "homepage": "Homepage",
+    "notConfigured": "Not configured"
+  }
+}

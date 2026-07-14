@@ -2,10 +2,12 @@ import { create } from "zustand";
 import type {
   CanvasElement,
   ColorTheme,
+  Language,
   StudioState,
   StudioTool,
   WorkspaceView,
 } from "../types/studio";
+import { detectLanguage, persistLanguage } from "../utils/i18n";
 
 const initialElements: CanvasElement[] = [
   {
@@ -81,6 +83,7 @@ const saveHistory = (state: StudioState) => ({
 interface StudioActions {
   setView: (view: WorkspaceView) => void;
   setTheme: (theme: ColorTheme) => void;
+  setLanguage: (language: Language) => void;
   setTool: (tool: StudioTool) => void;
   setZoom: (zoom: number) => void;
   toggleGrid: () => void;
@@ -97,6 +100,7 @@ interface StudioActions {
 export const useStudioStore = create<StudioState & StudioActions>((set) => ({
   view: "studio",
   theme: "dark",
+  language: detectLanguage(),
   activeTool: "select",
   zoom: 62,
   showGrid: false,
@@ -107,6 +111,10 @@ export const useStudioStore = create<StudioState & StudioActions>((set) => ({
   future: [],
   setView: (view) => set({ view }),
   setTheme: (theme) => set({ theme }),
+  setLanguage: (language) => {
+    persistLanguage(language);
+    set({ language });
+  },
   setTool: (activeTool) => set({ activeTool }),
   setZoom: (zoom) => set({ zoom: Math.min(200, Math.max(25, zoom)) }),
   toggleGrid: () => set((state) => ({ showGrid: !state.showGrid })),

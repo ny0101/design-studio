@@ -5,11 +5,12 @@ import { PropertiesPanel } from "./components/Properties/PropertiesPanel";
 import { Sidebar } from "./components/Sidebar/Sidebar";
 import { Toolbar } from "./components/Toolbar/Toolbar";
 import { LayersPanel } from "./components/Layers/LayersPanel";
-import { CREATOR_NOTICE } from "./config/app";
 import { useStudioStore } from "./store/studio-store";
+import { useTranslation } from "./hooks/useTranslation";
 
 export default function App() {
   const { theme, view } = useStudioStore();
+  const { t } = useTranslation();
   return (
     <div className="app-shell" data-theme={theme}>
       <Toolbar />
@@ -23,7 +24,7 @@ export default function App() {
       </div>
       <Footer />
       <p className="creator-notice" role="status">
-        {CREATOR_NOTICE}
+        {t("app.creatorNotice")}
       </p>
     </div>
   );
