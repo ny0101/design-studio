@@ -16,10 +16,16 @@ import {
 } from "react-konva";
 import type { KonvaEventObject } from "konva/lib/Node";
 import type Konva from "konva";
-import type { CanvasElement, CanvasPan, ImageElement } from "../../types/studio";
+import type {
+  CanvasElement,
+  CanvasPan,
+  ImageElement,
+  TextElement,
+} from "../../types/studio";
 import { useStudioStore } from "../../store/studio-store";
 import { useTranslation } from "../../hooks/useTranslation";
 import { createShapeElement } from "../../utils/shapes";
+import { DEFAULT_FONT } from "../../utils/fonts";
 
 export const CANVAS_SIZE = 1080;
 const MIN_SIZE = 5;
@@ -52,7 +58,15 @@ function RasterImage({
   );
 }
 
-function ElementNode({ element }: { element: CanvasElement }) {
+function ElementNode({
+  element,
+  editingId,
+  onEditText,
+}: {
+  element: CanvasElement;
+  editingId: string | null;
+  onEditText: (id: string) => void;
+}) {
   const { select, update, add } = useStudioStore();
   if (element.hidden) return null;
   const selectNode = () => select(element.id);
@@ -133,12 +147,27 @@ function ElementNode({ element }: { element: CanvasElement }) {
     return (
       <Text
         {...shared}
+        visible={editingId !== element.id}
         text={element.text}
         width={element.width}
         fontSize={element.fontSize}
-        fontStyle={element.fontStyle}
+        fontFamily={element.fontFamily ?? DEFAULT_FONT}
+        fontStyle={String(element.fontWeight ?? 400)}
         fill={element.fill}
         lineHeight={element.lineHeight}
+        letterSpacing={element.letterSpacing ?? 0}
+        align={element.align ?? "left"}
+        shadowEnabled={element.shadow?.enabled ?? false}
+        shadowColor={element.shadow?.color}
+        shadowBlur={element.shadow?.blur}
+        shadowOffsetX={element.shadow?.offsetX}
+        shadowOffsetY={element.shadow?.offsetY}
+        stroke={element.outline?.enabled ? element.outline.color : undefined}
+        strokeWidth={element.outline?.enabled ? element.outline.width : 0}
+        fillAfterStrokeEnabled
+        shadowForStrokeEnabled={false}
+        onDblClick={() => !element.locked && onEditText(element.id)}
+        onDblTap={() => !element.locked && onEditText(element.id)}
       />
     );
   if (element.kind === "rect")
@@ -332,6 +361,7 @@ export function DesignCanvas() {
   const snapTargets = useRef<SnapTargets>({ vertical: [], horizontal: [] });
   const [viewport, setViewport] = useState({ width: 0, height: 0 });
   const [panning, setPanning] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const {
     elements,
     select,
@@ -524,7 +554,7 @@ export function DesignCanvas() {
       y: position.y,
       text: t("defaults.newTextContent"),
       fontSize: 68,
-      fontStyle: "bold",
+      fontWeight: 700,
       fill: "#16181D",
       width: 660,
       lineHeight: 1.1,
@@ -559,6 +589,17 @@ export function DesignCanvas() {
   };
 
   const gridLines = Math.floor(CANVAS_SIZE / 40) + 1;
+  const editingText = elements.find(
+    (element): element is TextElement =>
+      element.id === editingId && element.kind === "text",
+  );
+  const commitTextEdit = (value: string) => {
+    if (editingText) {
+      const { update } = useStudioStore.getState();
+      update(editingText.id, { text: value });
+    }
+    setEditingId(null);
+  };
 
   return (
     <section className="native-canvas" aria-label={t("canvas.label")}>
@@ -600,7 +641,12 @@ export function DesignCanvas() {
                 shadowOffsetY={14}
               />
               {elements.map((element) => (
-                <ElementNode key={element.id} element={element} />
+                <ElementNode
+                  key={element.id}
+                  element={element}
+                  editingId={editingId}
+                  onEditText={setEditingId}
+                />
               ))}
             </Layer>
             <Layer ref={overlayRef} listening={!panning}>
@@ -674,6 +720,48 @@ export function DesignCanvas() {
               <SelectionTransformer />
             </Layer>
           </Stage>
+        )}
+        {editingText && (
+          <textarea
+            className="text-editor"
+            autoFocus
+            defaultValue={editingText.text}
+            ref={(node) => {
+              if (node) {
+                node.style.height = "auto";
+                node.style.height = `${node.scrollHeight}px`;
+                node.select();
+              }
+            }}
+            style={{
+              left: editingText.x * scale + effectivePan.x,
+              top: editingText.y * scale + effectivePan.y,
+              width: editingText.width * scale,
+              fontSize: editingText.fontSize * scale,
+              fontFamily: editingText.fontFamily ?? DEFAULT_FONT,
+              fontWeight: editingText.fontWeight ?? 400,
+              letterSpacing: `${(editingText.letterSpacing ?? 0) * scale}px`,
+              lineHeight: String(editingText.lineHeight),
+              textAlign: editingText.align ?? "left",
+              color: editingText.fill,
+              transform: `rotate(${editingText.rotation}deg)`,
+            }}
+            onInput={(event) => {
+              const node = event.currentTarget;
+              node.style.height = "auto";
+              node.style.height = `${node.scrollHeight}px`;
+            }}
+            onBlur={(event) => commitTextEdit(event.currentTarget.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Escape") {
+                event.preventDefault();
+                setEditingId(null);
+              } else if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                event.currentTarget.blur();
+              }
+            }}
+          />
         )}
         {showRulers && viewport.width > 0 && (
           <>

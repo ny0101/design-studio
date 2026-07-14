@@ -33,14 +33,35 @@ export interface BaseElement {
   locked: boolean;
 }
 
+export interface ElementShadow {
+  enabled: boolean;
+  color: string;
+  blur: number;
+  offsetX: number;
+  offsetY: number;
+}
+
+export interface TextOutline {
+  enabled: boolean;
+  color: string;
+  width: number;
+}
+
+export type TextAlign = "left" | "center" | "right";
+
 export interface TextElement extends BaseElement {
   kind: "text";
   text: string;
   fontSize: number;
-  fontStyle: "normal" | "bold";
+  fontFamily?: string;
+  fontWeight?: number;
   fill: string;
   width: number;
   lineHeight: number;
+  letterSpacing?: number;
+  align?: TextAlign;
+  shadow?: ElementShadow;
+  outline?: TextOutline;
 }
 
 export interface RectElement extends BaseElement {

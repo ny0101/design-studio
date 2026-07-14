@@ -1,7 +1,14 @@
-import { ImagePlus, SlidersHorizontal } from "lucide-react";
-import type { CanvasElement } from "../../types/studio";
+import {
+  AlignCenter,
+  AlignLeft,
+  AlignRight,
+  ImagePlus,
+  SlidersHorizontal,
+} from "lucide-react";
+import type { CanvasElement, TextAlign, TextElement } from "../../types/studio";
 import { useStudioStore } from "../../store/studio-store";
 import { useTranslation } from "../../hooks/useTranslation";
+import { DEFAULT_FONT, FONT_FAMILIES, FONT_WEIGHTS } from "../../utils/fonts";
 
 const NumberField = ({
   label,
@@ -30,6 +37,194 @@ const NumberField = ({
     </div>
   </label>
 );
+
+function TextProperties({
+  element,
+  change,
+}: {
+  element: TextElement;
+  change: (patch: Partial<TextElement>) => void;
+}) {
+  const { t } = useTranslation();
+  const shadow = element.shadow ?? {
+    enabled: false,
+    color: "#000000",
+    blur: 12,
+    offsetX: 0,
+    offsetY: 6,
+  };
+  const outline = element.outline ?? { enabled: false, color: "#FFFFFF", width: 2 };
+  const aligns: { value: TextAlign; icon: typeof AlignLeft; label: string }[] = [
+    { value: "left", icon: AlignLeft, label: t("properties.alignLeft") },
+    { value: "center", icon: AlignCenter, label: t("properties.alignCenter") },
+    { value: "right", icon: AlignRight, label: t("properties.alignRight") },
+  ];
+  return (
+    <>
+      <section>
+        <h3>{t("properties.text")}</h3>
+        <label className="property-field">
+          <span>{t("properties.content")}</span>
+          <textarea
+            value={element.text}
+            onChange={(event) => change({ text: event.target.value })}
+          />
+        </label>
+        <label className="property-field">
+          <span>{t("properties.fontFamily")}</span>
+          <select
+            value={element.fontFamily ?? DEFAULT_FONT}
+            onChange={(event) => change({ fontFamily: event.target.value })}
+          >
+            {FONT_FAMILIES.map((font) => (
+              <option key={font.label} value={font.value}>
+                {font.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="property-field">
+          <span>{t("properties.fontWeight")}</span>
+          <select
+            value={element.fontWeight ?? 400}
+            onChange={(event) => change({ fontWeight: Number(event.target.value) })}
+          >
+            {FONT_WEIGHTS.map((weight) => (
+              <option key={weight.value} value={weight.value}>
+                {t(`weights.${weight.key}`)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <NumberField
+          label={t("properties.size")}
+          value={element.fontSize}
+          min={6}
+          max={300}
+          onChange={(value) => change({ fontSize: value })}
+        />
+        <label className="property-field color">
+          <span>{t("properties.color")}</span>
+          <input
+            type="color"
+            value={element.fill}
+            onChange={(event) => change({ fill: event.target.value })}
+          />
+        </label>
+        <NumberField
+          label={t("properties.letterSpacing")}
+          value={Math.round(element.letterSpacing ?? 0)}
+          min={-5}
+          max={40}
+          onChange={(value) => change({ letterSpacing: value })}
+        />
+        <NumberField
+          label={t("properties.lineHeight")}
+          value={Math.round(element.lineHeight * 100)}
+          min={70}
+          max={250}
+          onChange={(value) => change({ lineHeight: value / 100 })}
+        />
+        <div className="property-field">
+          <span>{t("properties.alignment")}</span>
+          <div className="align-buttons">
+            {aligns.map(({ value, icon: Icon, label }) => (
+              <button
+                key={value}
+                className={(element.align ?? "left") === value ? "selected" : undefined}
+                onClick={() => change({ align: value })}
+                title={label}
+              >
+                <Icon size={15} />
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+      <section>
+        <h3>{t("properties.shadow")}</h3>
+        <label className="property-toggle">
+          <input
+            type="checkbox"
+            checked={shadow.enabled}
+            onChange={(event) =>
+              change({ shadow: { ...shadow, enabled: event.target.checked } })
+            }
+          />
+          <span>{t("properties.enabled")}</span>
+        </label>
+        {shadow.enabled && (
+          <>
+            <label className="property-field color">
+              <span>{t("properties.color")}</span>
+              <input
+                type="color"
+                value={shadow.color}
+                onChange={(event) =>
+                  change({ shadow: { ...shadow, color: event.target.value } })
+                }
+              />
+            </label>
+            <NumberField
+              label={t("properties.blur")}
+              value={shadow.blur}
+              max={80}
+              onChange={(value) => change({ shadow: { ...shadow, blur: value } })}
+            />
+            <NumberField
+              label={t("properties.offsetX")}
+              value={shadow.offsetX}
+              min={-60}
+              max={60}
+              onChange={(value) => change({ shadow: { ...shadow, offsetX: value } })}
+            />
+            <NumberField
+              label={t("properties.offsetY")}
+              value={shadow.offsetY}
+              min={-60}
+              max={60}
+              onChange={(value) => change({ shadow: { ...shadow, offsetY: value } })}
+            />
+          </>
+        )}
+      </section>
+      <section>
+        <h3>{t("properties.outline")}</h3>
+        <label className="property-toggle">
+          <input
+            type="checkbox"
+            checked={outline.enabled}
+            onChange={(event) =>
+              change({ outline: { ...outline, enabled: event.target.checked } })
+            }
+          />
+          <span>{t("properties.enabled")}</span>
+        </label>
+        {outline.enabled && (
+          <>
+            <label className="property-field color">
+              <span>{t("properties.color")}</span>
+              <input
+                type="color"
+                value={outline.color}
+                onChange={(event) =>
+                  change({ outline: { ...outline, color: event.target.value } })
+                }
+              />
+            </label>
+            <NumberField
+              label={t("properties.outlineWidth")}
+              value={outline.width}
+              min={1}
+              max={24}
+              onChange={(value) => change({ outline: { ...outline, width: value } })}
+            />
+          </>
+        )}
+      </section>
+    </>
+  );
+}
 
 function EmptyProperties() {
   const { t } = useTranslation();
@@ -126,45 +321,7 @@ function Properties({
           onChange={(value) => change({ rotation: value })}
         />
       </section>
-      {element.kind === "text" && (
-        <section>
-          <h3>{t("properties.text")}</h3>
-          <label className="property-field">
-            <span>{t("properties.content")}</span>
-            <textarea
-              value={element.text}
-              onChange={(event) => change({ text: event.target.value })}
-            />
-          </label>
-          <label className="property-field">
-            <span>{t("properties.font")}</span>
-            <select
-              value={element.fontStyle}
-              onChange={(event) =>
-                change({ fontStyle: event.target.value as "normal" | "bold" })
-              }
-            >
-              <option value="normal">{t("properties.regular")}</option>
-              <option value="bold">{t("properties.bold")}</option>
-            </select>
-          </label>
-          <NumberField
-            label={t("properties.size")}
-            value={element.fontSize}
-            min={12}
-            max={220}
-            onChange={(value) => change({ fontSize: value })}
-          />
-          <label className="property-field color">
-            <span>{t("properties.color")}</span>
-            <input
-              type="color"
-              value={element.fill}
-              onChange={(event) => change({ fill: event.target.value })}
-            />
-          </label>
-        </section>
-      )}
+      {element.kind === "text" && <TextProperties element={element} change={change} />}
       {element.kind === "rect" && (
         <section>
           <h3>{t("properties.shape")}</h3>

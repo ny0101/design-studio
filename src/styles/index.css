@@ -290,6 +290,50 @@ button:disabled {
   margin-left: 14px;
   color: #dfe3eb;
 }
+.align-buttons {
+  display: flex;
+  gap: 4px;
+}
+.align-buttons button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid #373a43;
+  border-radius: 6px;
+  color: #b4b8c4;
+  background: transparent;
+}
+.align-buttons button:hover,
+.align-buttons button.selected {
+  border-color: #6c7cff;
+  color: #fff;
+  background: #30323a;
+}
+.property-toggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 8px;
+  color: #aeb3c0;
+  font-size: 11px;
+}
+.property-toggle input {
+  accent-color: #6c7cff;
+}
+.text-editor {
+  position: absolute;
+  z-index: 4;
+  margin: 0;
+  padding: 0;
+  border: 1px dashed #6c7cff;
+  background: transparent;
+  outline: none;
+  overflow: hidden;
+  resize: none;
+  transform-origin: top left;
+}
 .ruler {
   position: absolute;
   z-index: 2;
