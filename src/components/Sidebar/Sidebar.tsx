@@ -9,6 +9,7 @@ import {
   Sparkles,
   Type,
   Upload,
+  Wand2,
 } from "lucide-react";
 import type { StudioTool } from "../../types/studio";
 import { useStudioStore } from "../../store/studio-store";
@@ -23,6 +24,7 @@ const tools: { id: StudioTool; icon: typeof MousePointer2 }[] = [
   { id: "background", icon: Palette },
   { id: "elements", icon: Sparkles },
   { id: "template", icon: LayoutTemplate },
+  { id: "ai", icon: Wand2 },
   { id: "upload", icon: Upload },
 ];
 export function Sidebar() {

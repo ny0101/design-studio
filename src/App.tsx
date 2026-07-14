@@ -4,6 +4,7 @@ import { ShapePicker } from "./components/Sidebar/ShapePicker";
 import { IconPicker } from "./components/Sidebar/IconPicker";
 import { TemplatePicker } from "./components/Sidebar/TemplatePicker";
 import { BackgroundPicker } from "./components/Sidebar/BackgroundPicker";
+import { AIPanel } from "./components/Sidebar/AIPanel";
 import { Footer } from "./components/Footer";
 import { PropertiesPanel } from "./components/Properties/PropertiesPanel";
 import { Sidebar } from "./components/Sidebar/Sidebar";
@@ -49,6 +50,7 @@ export default function App() {
           {view === "studio" && activeTool === "elements" && <IconPicker />}
           {view === "studio" && activeTool === "template" && <TemplatePicker />}
           {view === "studio" && activeTool === "background" && <BackgroundPicker />}
+          {view === "studio" && activeTool === "ai" && <AIPanel />}
         </main>
         {view === "studio" && <LayersPanel />}
         {view === "studio" && <PropertiesPanel />}

@@ -9,6 +9,7 @@ export type StudioTool =
   | "background"
   | "elements"
   | "template"
+  | "ai"
   | "upload";
 export type ElementKind =
   | "text"

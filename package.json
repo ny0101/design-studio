@@ -12,6 +12,7 @@
     "format:check": "prettier . --check"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.111.0",
     "jspdf": "^4.2.1",
     "konva": "^9.3.18",
     "lucide-react": "^0.468.0",
