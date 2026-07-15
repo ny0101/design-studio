@@ -60,11 +60,36 @@
     "apiKeyPlaceholder": "Anthropic API key (sk-ant-…)",
     "apiKeyHint": "Your key is stored only in this browser and sent directly to Anthropic.",
     "imageError": "Image generation failed. Please try again.",
+    "providers": {
+      "pollinations": "Pollinations",
+      "huggingface": "Hugging Face",
+      "gemini": "Gemini"
+    },
+    "providerHints": {
+      "pollinations": "Free, no key needed. Lowest quality.",
+      "huggingface": "Free token (no card required). Better quality, text-to-image only.",
+      "gemini": "Free tier (no card required). Supports reference images — check your quota after getting a key."
+    },
+    "hfKeyPlaceholder": "Hugging Face token (hf_…)",
+    "geminiKeyPlaceholder": "Google AI API key (AIza…)",
+    "uploadReference": "Upload image",
+    "useSelected": "Use selected",
+    "removeReference": "Remove reference image",
+    "modes": {
+      "style": "Style ref.",
+      "edit": "Edit",
+      "composite": "Composite"
+    },
+    "modeHints": {
+      "style": "Use the image only as a mood/color/style reference for a new image",
+      "edit": "Edit the uploaded image directly following your instruction",
+      "composite": "Keep the main subject as-is, only change the background/scene"
+    },
     "errors": {
-      "auth": "Invalid API key. Check your Anthropic API key.",
+      "auth": "Invalid API key. Double-check it.",
       "rateLimit": "Rate limited. Try again in a moment.",
       "api": "The AI service returned an error. Try again.",
-      "network": "Network error. Check your connection."
+      "network": "Network error — the request may have been blocked (e.g. CORS). Try a different provider."
     }
   },
   "sidebar": {

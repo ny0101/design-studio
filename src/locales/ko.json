@@ -60,11 +60,36 @@
     "apiKeyPlaceholder": "Anthropic API 키 (sk-ant-…)",
     "apiKeyHint": "키는 이 브라우저에만 저장되며 Anthropic으로 직접 전송됩니다.",
     "imageError": "이미지 생성에 실패했습니다. 다시 시도해 주세요.",
+    "providers": {
+      "pollinations": "Pollinations",
+      "huggingface": "Hugging Face",
+      "gemini": "Gemini"
+    },
+    "providerHints": {
+      "pollinations": "무료, 키 불필요. 품질은 가장 낮음.",
+      "huggingface": "무료 토큰(카드 불필요). 품질 개선, 텍스트→이미지만 지원.",
+      "gemini": "무료 티어(카드 불필요). 레퍼런스 이미지 지원 — 키 발급 후 할당량을 직접 확인하세요."
+    },
+    "hfKeyPlaceholder": "Hugging Face 토큰 (hf_…)",
+    "geminiKeyPlaceholder": "Google AI API 키 (AIza…)",
+    "uploadReference": "이미지 업로드",
+    "useSelected": "선택한 이미지 사용",
+    "removeReference": "레퍼런스 이미지 제거",
+    "modes": {
+      "style": "스타일 참고",
+      "edit": "편집",
+      "composite": "합성"
+    },
+    "modeHints": {
+      "style": "이미지를 새 이미지의 분위기·색상·스타일 참고용으로만 사용",
+      "edit": "업로드한 이미지를 지시에 따라 직접 편집",
+      "composite": "주요 피사체는 그대로 두고 배경/장면만 변경"
+    },
     "errors": {
-      "auth": "API 키가 올바르지 않습니다. Anthropic API 키를 확인해 주세요.",
+      "auth": "API 키가 올바르지 않습니다. 다시 확인해 주세요.",
       "rateLimit": "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.",
       "api": "AI 서비스 오류가 발생했습니다. 다시 시도해 주세요.",
-      "network": "네트워크 오류입니다. 연결을 확인해 주세요."
+      "network": "네트워크 오류입니다 — CORS 등으로 요청이 차단됐을 수 있습니다. 다른 프로바이더를 시도해 보세요."
     }
   },
   "sidebar": {
