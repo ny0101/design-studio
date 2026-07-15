@@ -66,11 +66,13 @@
       "gemini": "Gemini"
     },
     "providerHints": {
-      "pollinations": "Free, no key needed. Lowest quality — the only option confirmed to work reliably.",
-      "huggingface": "Free token, but direct browser calls may be blocked by CORS (confirmed failing for some users). If it fails, check the browser console (F12) for the exact reason.",
-      "gemini": "Confirmed: the image model has a 0-request free quota — Google requires billing enabled on your account even though usage cost per image is low. Text-only Gemini models do have a free tier; the image model does not."
+      "pollinations": "Free, no key needed. Lowest quality.",
+      "huggingface": "Free — needs a free Hugging Face token + a free Cloudflare proxy (one-time setup). Better quality, text-to-image only.",
+      "gemini": "Paid — requires billing enabled on Google Cloud (the image model has no free tier). Supports reference images."
     },
     "hfKeyPlaceholder": "Hugging Face token (hf_…)",
+    "proxyPlaceholder": "Proxy URL (https://…workers.dev)",
+    "proxyRequired": "Deploy the free Cloudflare proxy first (see DEPLOY_IMAGE_PROXY.md), then paste its URL here.",
     "geminiKeyPlaceholder": "Google AI API key (AIza…)",
     "uploadReference": "Upload image",
     "useSelected": "Use selected",
@@ -89,7 +91,7 @@
       "auth": "Invalid API key. Double-check it.",
       "rateLimit": "Rate limited. Try again in a moment.",
       "api": "The AI service returned an error. Try again.",
-      "network": "Network error — the request may have been blocked (e.g. CORS). Try a different provider."
+      "network": "Network error — the proxy URL may be wrong or the proxy isn't deployed. Double-check the URL, or see DEPLOY_IMAGE_PROXY.md."
     }
   },
   "sidebar": {

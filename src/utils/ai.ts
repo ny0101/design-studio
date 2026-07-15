@@ -4,6 +4,7 @@ import type { Language } from "../types/studio";
 const ANTHROPIC_KEY_STORAGE = "design-studio:anthropic-key";
 const HUGGINGFACE_KEY_STORAGE = "design-studio:huggingface-key";
 const GEMINI_KEY_STORAGE = "design-studio:gemini-key";
+const PROXY_URL_STORAGE = "design-studio:proxy-url";
 
 const readKey = (storageKey: string): string => {
   try {
@@ -27,6 +28,8 @@ export const loadHuggingFaceKey = () => readKey(HUGGINGFACE_KEY_STORAGE);
 export const persistHuggingFaceKey = (key: string) => writeKey(HUGGINGFACE_KEY_STORAGE, key);
 export const loadGeminiKey = () => readKey(GEMINI_KEY_STORAGE);
 export const persistGeminiKey = (key: string) => writeKey(GEMINI_KEY_STORAGE, key);
+export const loadProxyUrl = () => readKey(PROXY_URL_STORAGE);
+export const persistProxyUrl = (url: string) => writeKey(PROXY_URL_STORAGE, url);
 
 export type ImageProvider = "pollinations" | "huggingface" | "gemini";
 export type ReferenceMode = "style" | "edit" | "composite";
@@ -85,18 +88,28 @@ export async function generateImagePollinations(
 }
 
 const HF_MODEL = "black-forest-labs/FLUX.1-schnell";
+const HF_ENDPOINT = `https://api-inference.huggingface.co/models/${HF_MODEL}`;
 
-/** Hugging Face free Inference API — needs a free token, no billing. Text-to-image only. */
+/**
+ * Hugging Face free Inference API — needs a free token, no billing. Text-to-image only.
+ * Hugging Face does not send CORS headers, so a static site must route through a proxy
+ * (see worker/image-proxy.js). When proxyUrl is set the request goes:
+ *   browser -> proxyUrl?url=<HF endpoint> -> Hugging Face
+ */
 export async function generateImageHuggingFace(
   prompt: string,
   width: number,
   height: number,
   apiKey: string,
+  proxyUrl: string,
 ): Promise<GeneratedImage> {
   const boostedPrompt = `${prompt}${QUALITY_SUFFIX}`;
   const clampedWidth = Math.min(1024, width);
   const clampedHeight = Math.min(1024, height);
-  const response = await fetch(`https://api-inference.huggingface.co/models/${HF_MODEL}`, {
+  const endpoint = proxyUrl
+    ? `${proxyUrl.replace(/\/$/, "")}/?url=${encodeURIComponent(HF_ENDPOINT)}`
+    : HF_ENDPOINT;
+  const response = await fetch(endpoint, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
