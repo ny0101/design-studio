@@ -90,10 +90,31 @@ export async function generateImagePollinations(
   return { src, width, height };
 }
 
-const HF_MODEL = "black-forest-labs/FLUX.1-schnell";
+export const DEFAULT_HF_MODEL = "black-forest-labs/FLUX.1-schnell";
+const HF_MODEL_STORAGE = "design-studio:hf-model";
+export const loadHfModel = () => readKey(HF_MODEL_STORAGE) || DEFAULT_HF_MODEL;
+export const persistHfModel = (model: string) => writeKey(HF_MODEL_STORAGE, model);
+
+/**
+ * A handful of Hugging Face model repos worth trying for glossy 3D icon/design-asset
+ * renders. FLUX.1-schnell is the confirmed-working default. The others are not
+ * guaranteed to be served by Hugging Face's free serverless Inference API — long-tail
+ * community LoRA/fine-tune repos are hit-or-miss on that API (it mainly hosts a curated
+ * set of flagship checkpoints), so treat anything but the default as worth a try, not a
+ * promise. Switching back to the default is always one field away.
+ */
+export const SUGGESTED_HF_MODELS = [
+  "black-forest-labs/FLUX.1-schnell",
+  "black-forest-labs/FLUX.1-dev",
+  "stabilityai/stable-diffusion-3.5-large-turbo",
+  "rangwani-harsh/3d-icon-Flux-LoRA",
+  "thliang01/3d-icon-sdxl-dora-v0-8",
+];
+
 // The legacy api-inference.huggingface.co host is deprecated (returns 530 through
 // the proxy). Hugging Face routes serverless inference through router.huggingface.co now.
-const HF_ENDPOINT = `https://router.huggingface.co/hf-inference/models/${HF_MODEL}`;
+const hfEndpoint = (model: string) =>
+  `https://router.huggingface.co/hf-inference/models/${model}`;
 
 /**
  * Hugging Face free Inference API — needs a free token, no billing. Text-to-image only.
@@ -107,13 +128,15 @@ export async function generateImageHuggingFace(
   height: number,
   apiKey: string,
   proxyUrl: string,
+  model: string = DEFAULT_HF_MODEL,
 ): Promise<GeneratedImage> {
   const boostedPrompt = `${prompt}${QUALITY_SUFFIX}`;
   const clampedWidth = Math.min(1024, width);
   const clampedHeight = Math.min(1024, height);
+  const hfUrl = hfEndpoint(model);
   const endpoint = proxyUrl
-    ? `${proxyUrl.replace(/\/$/, "")}/?url=${encodeURIComponent(HF_ENDPOINT)}`
-    : HF_ENDPOINT;
+    ? `${proxyUrl.replace(/\/$/, "")}/?url=${encodeURIComponent(hfUrl)}`
+    : hfUrl;
   const response = await fetch(endpoint, {
     method: "POST",
     headers: {
@@ -128,14 +151,17 @@ export async function generateImageHuggingFace(
   const contentType = response.headers.get("content-type") ?? "";
   if (!response.ok || contentType.includes("application/json")) {
     const body = await response.json().catch(() => null);
-    const detail = body?.error ?? body?.message ?? `HTTP ${response.status}`;
+    let detail = String(body?.error ?? body?.message ?? `HTTP ${response.status}`);
+    if (response.status === 404) {
+      detail += ` — "${model}" isn't served by the free Inference API. Try a different model ID (e.g. ${DEFAULT_HF_MODEL}).`;
+    }
     const kind: AiErrorKind =
       response.status === 401 || response.status === 403
         ? "auth"
         : response.status === 429
           ? "rateLimit"
           : "api";
-    throw new AiRequestError(String(detail), kind);
+    throw new AiRequestError(detail, kind);
   }
   const src = await blobToDataUrl(await response.blob());
   return { src, width: clampedWidth, height: clampedHeight };

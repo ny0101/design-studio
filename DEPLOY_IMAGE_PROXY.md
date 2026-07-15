@@ -53,6 +53,22 @@ https://design-studio-proxy.<your-name>.workers.dev
 
 ---
 
+## 다른 모델 써보기
+
+Hugging Face에는 무료로 쓸 수 있는 모델이 아주 많은데, "모델 ID" 칸에 원하는 모델 저장소 이름을 입력하면 바로 바꿔서 시도해볼 수 있습니다 (기본값: `black-forest-labs/FLUX.1-schnell`).
+
+| 모델 ID | 특징 |
+|---|---|
+| `black-forest-labs/FLUX.1-schnell` | 기본값. 빠르고 안정적으로 응답 확인됨 |
+| `black-forest-labs/FLUX.1-dev` | 더 높은 품질·프롬프트 반영력. 처음 한 번 huggingface.co에서 라이선스 동의 필요, 무료 크레딧을 더 빨리 소진할 수 있음 |
+| `stabilityai/stable-diffusion-3.5-large-turbo` | 대안 플래그십 모델 |
+| `rangwani-harsh/3d-icon-Flux-LoRA` | 글로시 3D 아이콘 스타일 특화 LoRA (실험적) |
+| `thliang01/3d-icon-sdxl-dora-v0-8` | 글로시 3D 아이콘 스타일 특화 LoRA (실험적) |
+
+> ⚠️ Hugging Face 무료 서버리스 API는 주로 FLUX/SD 계열 대표 모델을 상시 서빙하고, 커뮤니티가 올린 LoRA/파인튜닝 모델은 요청해도 응답하지 않을 수 있습니다(그럴 땐 "404" 오류가 납니다). 그런 경우 모델 ID를 기본값으로 되돌리면 바로 다시 동작합니다.
+
+---
+
 ## 문제 해결
 
 | 증상 | 원인 / 해결 |
@@ -61,5 +77,6 @@ https://design-studio-proxy.<your-name>.workers.dev
 | "API 키가 올바르지 않습니다" | Hugging Face 토큰이 틀렸거나 만료됨. `Inference` 권한으로 다시 발급하세요. |
 | "요청이 너무 많습니다" | Hugging Face 무료 한도 초과. 잠시 후 다시 시도하세요. |
 | 첫 요청이 오래 걸림 | Hugging Face가 모델을 처음 로딩 중(콜드 스타트). 20~30초 후 다시 시도하면 빨라집니다. |
+| "isn't served by the free Inference API" / 404 | 입력한 모델 ID가 무료 API에서 서빙되지 않음. 모델 ID를 기본값(`black-forest-labs/FLUX.1-schnell`)으로 되돌리세요. |
 
 프록시를 여러 사람이 공유해도 되지만, 무료 한도(하루 10만 건)를 함께 쓰게 됩니다.

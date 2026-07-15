@@ -19,13 +19,16 @@ import {
   generateImagePollinations,
   loadApiKey,
   loadGeminiKey,
+  loadHfModel,
   loadHuggingFaceKey,
   loadProxyUrl,
   measureImage,
   persistApiKey,
   persistGeminiKey,
+  persistHfModel,
   persistHuggingFaceKey,
   persistProxyUrl,
+  SUGGESTED_HF_MODELS,
 } from "../../utils/ai";
 import { removeImageBackground } from "../../utils/backgroundRemoval";
 import { useStudioStore } from "../../store/studio-store";
@@ -52,6 +55,7 @@ export function AIPanel() {
   const [provider, setProvider] = useState<ImageProvider>("pollinations");
   const [imagePrompt, setImagePrompt] = useState("");
   const [hfKey, setHfKey] = useState(loadHuggingFaceKey);
+  const [hfModel, setHfModel] = useState(loadHfModel);
   const [proxyUrl, setProxyUrl] = useState(loadProxyUrl);
   const [geminiKey, setGeminiKey] = useState(loadGeminiKey);
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
@@ -117,10 +121,12 @@ export function AIPanel() {
       } else if (provider === "huggingface") {
         const key = hfKey.trim();
         const proxy = proxyUrl.trim();
-        if (!key || !proxy) return;
+        const model = hfModel.trim();
+        if (!key || !proxy || !model) return;
         persistHuggingFaceKey(key);
         persistProxyUrl(proxy);
-        image = await generateImageHuggingFace(prompt, 1024, 1024, key, proxy);
+        persistHfModel(model);
+        image = await generateImageHuggingFace(prompt, 1024, 1024, key, proxy, model);
       } else {
         const key = geminiKey.trim();
         if (!key) return;
@@ -148,7 +154,7 @@ export function AIPanel() {
 
   const providerKeyValid =
     provider === "pollinations" ||
-    (provider === "huggingface" && hfKey.trim() && proxyUrl.trim()) ||
+    (provider === "huggingface" && hfKey.trim() && proxyUrl.trim() && hfModel.trim()) ||
     (provider === "gemini" && geminiKey.trim());
 
   const onUploadReference = async (file: File) => {
@@ -254,6 +260,24 @@ export function AIPanel() {
               />
             </label>
             {!proxyUrl.trim() && <p className="ai-hint">{t("ai.proxyRequired")}</p>}
+            <label className="ai-key">
+              <Wand2 size={13} />
+              <input
+                type="text"
+                list="ai-hf-model-suggestions"
+                value={hfModel}
+                placeholder={t("ai.hfModelPlaceholder")}
+                onChange={(event) => setHfModel(event.target.value)}
+                autoComplete="off"
+                spellCheck={false}
+              />
+              <datalist id="ai-hf-model-suggestions">
+                {SUGGESTED_HF_MODELS.map((model) => (
+                  <option key={model} value={model} />
+                ))}
+              </datalist>
+            </label>
+            <p className="ai-hint">{t("ai.hfModelHint")}</p>
           </>
         )}
         {provider === "gemini" && (
