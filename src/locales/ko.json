@@ -66,11 +66,13 @@
       "gemini": "Gemini"
     },
     "providerHints": {
-      "pollinations": "무료, 키 불필요. 품질은 가장 낮지만 안정적으로 작동하는 유일한 옵션입니다.",
-      "huggingface": "무료 토큰이지만, 브라우저 직접 호출이 CORS로 차단될 수 있습니다(일부 사용자 확인됨). 실패하면 개발자 도구(F12) 콘솔에서 정확한 원인을 확인해 주세요.",
-      "gemini": "확인됨: 이미지 생성 모델은 무료 요청 한도가 0입니다 — 이미지 1장당 비용은 낮지만 Google 계정에 결제(카드) 등록이 필요합니다. 텍스트 전용 Gemini 모델은 무료 티어가 있지만, 이미지 모델은 없습니다."
+      "pollinations": "무료, 키 불필요. 품질은 가장 낮음.",
+      "huggingface": "무료 — Hugging Face 무료 토큰 + 무료 Cloudflare 프록시(최초 1회 설정) 필요. 품질 개선, 텍스트→이미지만 지원.",
+      "gemini": "유료 — Google Cloud 결제 등록 필요(이미지 모델은 무료 티어 없음). 레퍼런스 이미지 지원."
     },
     "hfKeyPlaceholder": "Hugging Face 토큰 (hf_…)",
+    "proxyPlaceholder": "프록시 URL (https://…workers.dev)",
+    "proxyRequired": "먼저 무료 Cloudflare 프록시를 배포하고(DEPLOY_IMAGE_PROXY.md 참고), 그 URL을 여기에 붙여넣으세요.",
     "geminiKeyPlaceholder": "Google AI API 키 (AIza…)",
     "uploadReference": "이미지 업로드",
     "useSelected": "선택한 이미지 사용",
@@ -89,7 +91,7 @@
       "auth": "API 키가 올바르지 않습니다. 다시 확인해 주세요.",
       "rateLimit": "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.",
       "api": "AI 서비스 오류가 발생했습니다. 다시 시도해 주세요.",
-      "network": "네트워크 오류입니다 — CORS 등으로 요청이 차단됐을 수 있습니다. 다른 프로바이더를 시도해 보세요."
+      "network": "네트워크 오류입니다 — 프록시 URL이 틀렸거나 프록시가 배포되지 않았을 수 있습니다. URL을 다시 확인하거나 DEPLOY_IMAGE_PROXY.md를 참고하세요."
     }
   },
   "sidebar": {

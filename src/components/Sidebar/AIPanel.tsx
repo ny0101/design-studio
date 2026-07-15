@@ -19,10 +19,12 @@ import {
   loadApiKey,
   loadGeminiKey,
   loadHuggingFaceKey,
+  loadProxyUrl,
   measureImage,
   persistApiKey,
   persistGeminiKey,
   persistHuggingFaceKey,
+  persistProxyUrl,
 } from "../../utils/ai";
 import { useStudioStore } from "../../store/studio-store";
 import { useTranslation } from "../../hooks/useTranslation";
@@ -48,6 +50,7 @@ export function AIPanel() {
   const [provider, setProvider] = useState<ImageProvider>("pollinations");
   const [imagePrompt, setImagePrompt] = useState("");
   const [hfKey, setHfKey] = useState(loadHuggingFaceKey);
+  const [proxyUrl, setProxyUrl] = useState(loadProxyUrl);
   const [geminiKey, setGeminiKey] = useState(loadGeminiKey);
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [mode, setMode] = useState<ReferenceMode>("style");
@@ -106,9 +109,11 @@ export function AIPanel() {
         image = await generateImagePollinations(prompt, 1024, 1024);
       } else if (provider === "huggingface") {
         const key = hfKey.trim();
-        if (!key) return;
+        const proxy = proxyUrl.trim();
+        if (!key || !proxy) return;
         persistHuggingFaceKey(key);
-        image = await generateImageHuggingFace(prompt, 1024, 1024, key);
+        persistProxyUrl(proxy);
+        image = await generateImageHuggingFace(prompt, 1024, 1024, key, proxy);
       } else {
         const key = geminiKey.trim();
         if (!key) return;
@@ -126,7 +131,7 @@ export function AIPanel() {
 
   const providerKeyValid =
     provider === "pollinations" ||
-    (provider === "huggingface" && hfKey.trim()) ||
+    (provider === "huggingface" && hfKey.trim() && proxyUrl.trim()) ||
     (provider === "gemini" && geminiKey.trim());
 
   const onUploadReference = async (file: File) => {
@@ -209,16 +214,30 @@ export function AIPanel() {
         </div>
         <p className="ai-hint">{t(`ai.providerHints.${provider}`)}</p>
         {provider === "huggingface" && (
-          <label className="ai-key">
-            <KeyRound size={13} />
-            <input
-              type="password"
-              value={hfKey}
-              placeholder={t("ai.hfKeyPlaceholder")}
-              onChange={(event) => setHfKey(event.target.value)}
-              autoComplete="off"
-            />
-          </label>
+          <>
+            <label className="ai-key">
+              <KeyRound size={13} />
+              <input
+                type="password"
+                value={hfKey}
+                placeholder={t("ai.hfKeyPlaceholder")}
+                onChange={(event) => setHfKey(event.target.value)}
+                autoComplete="off"
+              />
+            </label>
+            <label className="ai-key">
+              <Sparkles size={13} />
+              <input
+                type="text"
+                value={proxyUrl}
+                placeholder={t("ai.proxyPlaceholder")}
+                onChange={(event) => setProxyUrl(event.target.value)}
+                autoComplete="off"
+                spellCheck={false}
+              />
+            </label>
+            {!proxyUrl.trim() && <p className="ai-hint">{t("ai.proxyRequired")}</p>}
+          </>
         )}
         {provider === "gemini" && (
           <>
