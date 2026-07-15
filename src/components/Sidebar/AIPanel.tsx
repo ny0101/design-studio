@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import {
   Image as ImageIcon,
   KeyRound,
+  Scissors,
   Sparkles,
   Type,
   Upload,
@@ -26,6 +27,7 @@ import {
   persistHuggingFaceKey,
   persistProxyUrl,
 } from "../../utils/ai";
+import { removeImageBackground } from "../../utils/backgroundRemoval";
 import { useStudioStore } from "../../store/studio-store";
 import { useTranslation } from "../../hooks/useTranslation";
 
@@ -56,6 +58,10 @@ export function AIPanel() {
   const [mode, setMode] = useState<ReferenceMode>("style");
   const [imageBusy, setImageBusy] = useState(false);
   const [imageError, setImageError] = useState<{ kind: string; detail: string } | null>(null);
+  const [autoRemoveBg, setAutoRemoveBg] = useState(true);
+  const [statusLabel, setStatusLabel] = useState<"generating" | "removingBackground" | null>(
+    null,
+  );
   const fileInput = useRef<HTMLInputElement>(null);
 
   const [brief, setBrief] = useState("");
@@ -103,6 +109,7 @@ export function AIPanel() {
     if (!prompt || imageBusy) return;
     setImageBusy(true);
     setImageError(null);
+    setStatusLabel("generating");
     try {
       let image;
       if (provider === "pollinations") {
@@ -120,12 +127,22 @@ export function AIPanel() {
         persistGeminiKey(key);
         image = await generateImageGemini(prompt, key, referenceImage, mode);
       }
-      await placeGeneratedImage(image.src, prompt);
+      let src = image.src;
+      if (autoRemoveBg) {
+        setStatusLabel("removingBackground");
+        try {
+          src = await removeImageBackground(src);
+        } catch {
+          // Cutout failed (e.g. model asset fetch blocked) — fall back to the original image.
+        }
+      }
+      await placeGeneratedImage(src, prompt);
       setImagePrompt("");
     } catch (error) {
       setImageError({ kind: describeAiError(error), detail: describeAiErrorDetail(error) });
     } finally {
       setImageBusy(false);
+      setStatusLabel(null);
     }
   };
 
@@ -307,13 +324,23 @@ export function AIPanel() {
           onChange={(event) => setImagePrompt(event.target.value)}
           rows={3}
         />
+        <label className="ai-checkbox">
+          <input
+            type="checkbox"
+            checked={autoRemoveBg}
+            onChange={(event) => setAutoRemoveBg(event.target.checked)}
+          />
+          <Scissors size={13} />
+          {t("ai.autoRemoveBackground")}
+        </label>
+        <p className="ai-hint">{t("ai.autoRemoveBackgroundHint")}</p>
         <button
           className="ai-generate"
           onClick={makeImage}
           disabled={imageBusy || !imagePrompt.trim() || !providerKeyValid}
         >
           <Wand2 size={14} />
-          {imageBusy ? t("ai.generating") : t("ai.generateImage")}
+          {statusLabel ? t(`ai.${statusLabel}`) : t("ai.generateImage")}
         </button>
         {imageError && (
           <p className="ai-error">
