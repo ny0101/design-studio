@@ -66,9 +66,9 @@
       "gemini": "Gemini"
     },
     "providerHints": {
-      "pollinations": "Free, no key needed. Lowest quality.",
-      "huggingface": "Free token (no card required). Better quality, text-to-image only.",
-      "gemini": "Free tier (no card required). Supports reference images — check your quota after getting a key."
+      "pollinations": "Free, no key needed. Lowest quality — the only option confirmed to work reliably.",
+      "huggingface": "Free token, but direct browser calls may be blocked by CORS (confirmed failing for some users). If it fails, check the browser console (F12) for the exact reason.",
+      "gemini": "Confirmed: the image model has a 0-request free quota — Google requires billing enabled on your account even though usage cost per image is low. Text-only Gemini models do have a free tier; the image model does not."
     },
     "hfKeyPlaceholder": "Hugging Face token (hf_…)",
     "geminiKeyPlaceholder": "Google AI API key (AIza…)",
@@ -230,7 +230,9 @@
     "png-transparent": "PNG (transparent)",
     "jpg": "JPG",
     "svg": "SVG",
-    "pdf": "PDF"
+    "pdf": "PDF",
+    "figma": "Open in Figma (SVG)",
+    "figmaInstructions": "Your design was downloaded as an SVG file. Open Figma and drag the file onto the canvas — it will appear as fully editable layers. Note: text may come in as outlined shapes rather than editable text, depending on your Figma import settings."
   },
   "weights": {
     "light": "Light",
