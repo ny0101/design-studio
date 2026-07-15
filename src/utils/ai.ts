@@ -88,7 +88,9 @@ export async function generateImagePollinations(
 }
 
 const HF_MODEL = "black-forest-labs/FLUX.1-schnell";
-const HF_ENDPOINT = `https://api-inference.huggingface.co/models/${HF_MODEL}`;
+// The legacy api-inference.huggingface.co host is deprecated (returns 530 through
+// the proxy). Hugging Face routes serverless inference through router.huggingface.co now.
+const HF_ENDPOINT = `https://router.huggingface.co/hf-inference/models/${HF_MODEL}`;
 
 /**
  * Hugging Face free Inference API — needs a free token, no billing. Text-to-image only.

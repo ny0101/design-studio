@@ -51,14 +51,24 @@ export default {
     }
 
     // Forward the request as-is (Authorization + body pass straight through).
-    const upstream = await fetch(targetUrl.toString(), {
-      method: "POST",
-      headers: {
-        Authorization: request.headers.get("Authorization") ?? "",
-        "Content-Type": request.headers.get("Content-Type") ?? "application/json",
-      },
-      body: await request.arrayBuffer(),
-    });
+    // Wrap in try/catch so an upstream connection failure returns a readable
+    // JSON error instead of Cloudflare's opaque HTTP 530.
+    let upstream;
+    try {
+      upstream = await fetch(targetUrl.toString(), {
+        method: "POST",
+        headers: {
+          Authorization: request.headers.get("Authorization") ?? "",
+          "Content-Type": request.headers.get("Content-Type") ?? "application/json",
+        },
+        body: await request.arrayBuffer(),
+      });
+    } catch (error) {
+      return json(
+        { error: `Proxy could not reach ${targetUrl.hostname}: ${error?.message ?? error}` },
+        502,
+      );
+    }
 
     // Re-emit the upstream response with CORS headers added.
     const headers = new Headers(corsHeaders);
