@@ -724,6 +724,16 @@ button:disabled {
   color: #fff;
   background: #363944;
 }
+.export-dropdown-divider {
+  display: block;
+  height: 1px;
+  margin: 4px 6px;
+  background: #373a43;
+}
+.export-dropdown button svg {
+  margin-right: 6px;
+  vertical-align: -2px;
+}
 .align-buttons {
   display: flex;
   gap: 4px;

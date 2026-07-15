@@ -66,9 +66,9 @@
       "gemini": "Gemini"
     },
     "providerHints": {
-      "pollinations": "무료, 키 불필요. 품질은 가장 낮음.",
-      "huggingface": "무료 토큰(카드 불필요). 품질 개선, 텍스트→이미지만 지원.",
-      "gemini": "무료 티어(카드 불필요). 레퍼런스 이미지 지원 — 키 발급 후 할당량을 직접 확인하세요."
+      "pollinations": "무료, 키 불필요. 품질은 가장 낮지만 안정적으로 작동하는 유일한 옵션입니다.",
+      "huggingface": "무료 토큰이지만, 브라우저 직접 호출이 CORS로 차단될 수 있습니다(일부 사용자 확인됨). 실패하면 개발자 도구(F12) 콘솔에서 정확한 원인을 확인해 주세요.",
+      "gemini": "확인됨: 이미지 생성 모델은 무료 요청 한도가 0입니다 — 이미지 1장당 비용은 낮지만 Google 계정에 결제(카드) 등록이 필요합니다. 텍스트 전용 Gemini 모델은 무료 티어가 있지만, 이미지 모델은 없습니다."
     },
     "hfKeyPlaceholder": "Hugging Face 토큰 (hf_…)",
     "geminiKeyPlaceholder": "Google AI API 키 (AIza…)",
@@ -230,7 +230,9 @@
     "png-transparent": "PNG (투명 배경)",
     "jpg": "JPG",
     "svg": "SVG",
-    "pdf": "PDF"
+    "pdf": "PDF",
+    "figma": "Figma에서 편집 (SVG)",
+    "figmaInstructions": "디자인이 SVG 파일로 다운로드되었습니다. Figma를 열고 이 파일을 캔버스에 드래그하면 편집 가능한 레이어로 열립니다. 참고: Figma 가져오기 설정에 따라 텍스트가 편집 가능한 글자가 아닌 도형(윤곽선)으로 들어올 수 있습니다."
   },
   "weights": {
     "light": "가늘게",

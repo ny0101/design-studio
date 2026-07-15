@@ -2,6 +2,7 @@ import {
   ChevronDown,
   Download,
   Eye,
+  ExternalLink,
   Grid2X2,
   History,
   Languages,
@@ -152,6 +153,10 @@ function ExportMenu() {
       new CustomEvent("design-studio:export", { detail: { format } }),
     );
   };
+  const exportToFigma = () => {
+    exportAs("svg");
+    window.alert(t("export.figmaInstructions"));
+  };
   return (
     <div className="export-menu" ref={menu}>
       <button className="toolbar-button primary" onClick={() => setOpen(!open)}>
@@ -165,6 +170,11 @@ function ExportMenu() {
               {t(`export.${format}`)}
             </button>
           ))}
+          <span className="export-dropdown-divider" />
+          <button onClick={exportToFigma}>
+            <ExternalLink size={13} />
+            {t("export.figma")}
+          </button>
         </div>
       )}
     </div>
