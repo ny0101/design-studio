@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   AlignCenter,
   AlignCenterHorizontal,
@@ -13,6 +14,7 @@ import {
   FlipHorizontal2,
   FlipVertical2,
   ImagePlus,
+  Scissors,
   SlidersHorizontal,
 } from "lucide-react";
 import type {
@@ -28,6 +30,7 @@ import { useStudioStore } from "../../store/studio-store";
 import { useTranslation } from "../../hooks/useTranslation";
 import { DEFAULT_FONT, FONT_FAMILIES, FONT_WEIGHTS } from "../../utils/fonts";
 import { computeCenteredCrop, loadImageSource } from "../../utils/images";
+import { removeImageBackground } from "../../utils/backgroundRemoval";
 
 const NumberField = ({
   label,
@@ -434,6 +437,19 @@ function ImageProperties({
 }) {
   const { t } = useTranslation();
   const shadow = element.shadow ?? DEFAULT_SHADOW;
+  const [removingBg, setRemovingBg] = useState(false);
+  const removeBackground = async () => {
+    if (removingBg) return;
+    setRemovingBg(true);
+    try {
+      const src = await removeImageBackground(element.src);
+      change({ src });
+    } catch {
+      // Cutout failed (e.g. model asset fetch blocked) — leave the image untouched.
+    } finally {
+      setRemovingBg(false);
+    }
+  };
   const applyCrop = (key: string) => {
     const preset = CROP_PRESETS.find((item) => item.key === key);
     if (!preset) return;
@@ -474,6 +490,10 @@ function ImageProperties({
             onChange={(event) => event.target.files?.[0] && upload(event.target.files[0])}
           />
         </label>
+        <button className="remove-background-button" onClick={removeBackground} disabled={removingBg}>
+          <Scissors size={15} />
+          {removingBg ? t("properties.removingBackground") : t("properties.removeBackground")}
+        </button>
         <div className="property-field">
           <span>{t("properties.flip")}</span>
           <div className="align-buttons">

@@ -50,7 +50,10 @@ export interface GeneratedImage {
 }
 
 const QUALITY_SUFFIX =
-  ", high quality, sharp focus, clean professional illustration, detailed";
+  ", 3D render, glossy translucent glass material, soft studio lighting, subtle reflections " +
+  "and highlights, vibrant saturated colors, smooth rounded shapes, tiny sparkle particles, " +
+  "centered single object, isolated on plain white background, product icon visualization, " +
+  "high detail, no text, no watermark";
 
 const blobToDataUrl = (blob: Blob) =>
   new Promise<string>((resolve, reject) => {

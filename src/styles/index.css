@@ -327,6 +327,17 @@ button:disabled {
   font-size: 9px;
   line-height: 1.4;
 }
+.ai-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #dfe3eb;
+  font-size: 11px;
+  cursor: pointer;
+}
+.ai-checkbox input {
+  accent-color: #b4ff55;
+}
 .ai-generate {
   display: inline-flex;
   align-items: center;
@@ -1073,6 +1084,26 @@ button:disabled {
 }
 .upload-replace input {
   display: none;
+}
+.remove-background-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #565b68;
+  border-radius: 7px;
+  color: #dfe3eb;
+  background: #2d2f36;
+  font-size: 10px;
+}
+.remove-background-button:enabled:hover {
+  border-color: #b4ff55;
+  color: #c9ff89;
+}
+.remove-background-button:disabled {
+  opacity: 0.5;
 }
 .empty-properties {
   display: grid;
